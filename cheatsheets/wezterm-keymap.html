@@ -105,19 +105,20 @@
 </style>
 </head><body><div class="sheet">
 <header><div><h1>WezTerm — Keymap</h1><p class="subtitle">Shortcut lookup · APP routing, WEZ controls, and nested applications</p></div><div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>APP by default · WEZ controls on demand</p></div></header>
-<nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html" aria-current="page">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav><p class="intro">Check the <strong>APP / WEZ</strong> badge first. Only fullscreen and the mode toggle are always reserved. Key tables, workflow steps, and architecture concepts have separate sheets.</p>
+<nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html" aria-current="page">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav><p class="intro">Check the <strong>APP / WEZ</strong> badge first. Fullscreen, the mode toggle, and host-clipboard paste are always reserved. Key tables, workflow steps, and architecture concepts have separate sheets.</p>
 <main class="grid">
-<section class="card full" style="--accent:var(--teal)" aria-labelledby="routing"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="routing">Always on — two outer shortcuts</h2></div><div class="body">
+<section class="card full" style="--accent:var(--teal)" aria-labelledby="routing"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="routing">Always on — fullscreen, toggle, and paste</h2></div><div class="body">
 <table class="scope-table routing-keys" aria-label="Global key routing">
 <tr><th scope="row"><kbd>Alt+Enter</kbd></th><td>Toggle WezTerm fullscreen in APP and WEZ.</td></tr>
 <tr><th scope="row"><kbd>Ctrl+Shift+F12</kbd></th><td>Toggle the current GUI window between APP and WEZ.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+v</kbd></th><td>Paste the host clipboard into the focused terminal, including a Zellij pane; macOS Cmd+v also works.</td></tr>
 <tr><th scope="row"><kbd>F12</kbd></th><td>Forwarded for Zellij’s Normal/Locked toggle; does not change WezTerm mode.</td></tr>
 <tr><th scope="row"><kbd>Esc</kbd></th><td>Sent onward immediately. No Escape leader or double-press workaround.</td></tr>
-</table><p class="note" style="margin-top:10px">APP reserves only the first two chords. WEZ adds the controls below. On compact Mac keyboards F12 may require Fn. OS shortcuts and native menu actions remain OS-controlled. Zellij’s F12 lock requires its own binding.</p>
+</table><p class="note" style="margin-top:10px">APP reserves fullscreen, the toggle, and paste. Plain Ctrl+v remains an application key. WEZ adds the controls below. On compact Mac keyboards F12 may require Fn. OS shortcuts and native menu actions remain OS-controlled. Zellij’s F12 lock requires its own binding.</p>
 </div></section>
 <section class="card " style="--accent:var(--blue)" aria-labelledby="wez-controls"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="wez-controls">WEZ only — clipboard, view, and reload</h2></div><div class="body">
 <table class="scope-table" aria-label="WEZ direct controls">
-<tr><th scope="row"><kbd>Ctrl+Shift+c</kbd> / <kbd>v</kbd></th><td>Copy / paste host clipboard; macOS Cmd+c / Cmd+v.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+c</kbd></th><td>Copy the outer-terminal selection to the host clipboard; macOS Cmd+c. Paste is always available above.</td></tr>
 <tr><th scope="row"><kbd>Ctrl+Shift+f</kbd></th><td>Outer-terminal search; macOS Cmd+f.</td></tr>
 <tr><th scope="row"><kbd>Ctrl+Shift+p</kbd></th><td>Command palette; macOS Cmd+Shift+p.</td></tr>
 <tr><th scope="row"><kbd>Ctrl+Shift+=</kbd> / <kbd>-</kbd> / <kbd>0</kbd></th><td>Font size increase / decrease / reset; macOS Cmd+= / - / 0.</td></tr>

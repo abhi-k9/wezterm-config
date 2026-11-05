@@ -138,8 +138,9 @@ fi && cp "$HOME/wezterm-config/.wezterm.lua" "$HOME/.wezterm.lua"
 ```
 
 The active files use the same home-directory layout as Linux. WezTerm uses your
-platform default shell; its Cmd shortcuts are available in WEZ mode. If the
-application opens but `wezterm` is unavailable in Terminal, see
+platform default shell; Cmd+V pastes in either mode, and its other configured
+Cmd shortcuts are available in WEZ mode. If the application opens but `wezterm`
+is unavailable in Terminal, see
 [executable locations](#wezterm-command-not-found).
 
 ## Optional private profile
@@ -222,8 +223,9 @@ Also open WezTerm normally from your desktop/app launcher to confirm it finds th
 same home-directory config. Configuration tools may fall back to defaults after
 an error, so inspect diagnostics as well as the command's exit status.
 
-Expect Catppuccin Macchiato, a bottom tab bar, and an **APP** badge. In APP only
-Alt+Enter (fullscreen) and Ctrl+Shift+F12 (mode toggle) are reserved by this config.
+Expect Catppuccin Macchiato, a bottom tab bar, and an **APP** badge. In APP,
+Alt+Enter (fullscreen), Ctrl+Shift+F12 (mode toggle), and Ctrl+Shift+V (host clipboard
+paste) are reserved by this config. Cmd+V also pastes on macOS, in either mode.
 Plain F12 reaches Zellij; ordinary Escape reaches the application immediately.
 
 Toggle **WEZ** with Ctrl+Shift+F12. Press Ctrl+Shift+Space, release, then `p` for
@@ -359,8 +361,9 @@ a window.
 ### A key is consumed or the badge is unexpected
 
 Check the APP/WEZ badge and Zellij's Normal/Locked indicator independently. In
-APP only the two global shortcuts are reserved. WEZ enables its explicit control
-map; its command prefix is Ctrl+Shift+Space, not Escape. A mode change covers all
+APP only fullscreen, the mode toggle, and host-clipboard paste are reserved.
+WEZ enables its explicit control map; its command prefix is Ctrl+Shift+Space,
+not Escape. A mode change covers all
 outer tabs/panes in that GUI window. On compact Mac keyboards, F12 may need Fn.
 
 Remove old leader/default-key overrides and inspect any custom global
@@ -369,3 +372,9 @@ Remove old leader/default-key overrides and inspect any custom global
 reaches WezTerm, change that OS shortcut or the local toggle chord using the
 public example. A reload resets to APP. See [input routing](INPUT.md) for the
 full layer model, copy/search UI behavior, and manual verification checklist.
+
+If Ctrl+Shift+V prints `^V`, confirm that the updated shared file was copied to
+the active config location and reloaded. Host-clipboard paste works in APP and
+WEZ; plain Ctrl+V still goes to the application. Focus the intended Zellij pane
+and enter Neovim Insert mode before pasting into an editor buffer. See
+[clipboard behavior](INPUT.md#clipboard).

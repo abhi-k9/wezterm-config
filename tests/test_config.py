@@ -179,7 +179,7 @@ return ok and config or w.config_builder()
         toggle = result['keys'][1]
         self.assertEqual(toggle['key'], 'F11')
         self.assertEqual(toggle['action']['EmitEvent'], 'toggle-input-mode')
-        self.assertEqual(len(result['keys']), 2)
+        self.assertEqual(len(result['keys']), 3)
 
     def test_legacy_overrides_cannot_silently_break_app_mode(self):
         self.probe(local='''return function(config)
@@ -199,19 +199,29 @@ return ok and config or w.config_builder()
                 self.probe(local=local, expected_error=expected)
         self.probe(read_failure=True, expected_error='permission denied')
 
-    def test_app_mode_reserves_only_toggle_and_fullscreen(self):
+    def test_app_mode_reserves_only_toggle_fullscreen_and_paste(self):
         for triple in ['x86_64-unknown-linux-gnu', 'aarch64-apple-darwin',
                        'x86_64-pc-windows-msvc']:
             with self.subTest(triple=triple):
                 result = self.probe(triple=triple)
                 self.assertTrue(result['defaults_disabled'])
                 self.assertIs(result['leader'], False)
-                self.assertEqual(len(result['keys']), 2)
+                self.assertEqual(len(result['keys']), 4 if 'apple' in triple else 3)
                 self.assertEqual(result['keys'][0], {
                     'key': 'Enter', 'mods': 'ALT', 'action': 'ToggleFullScreen'})
                 self.assertEqual(result['keys'][1]['key'], 'F12')
                 self.assertEqual(set(result['keys'][1]['mods'].split('|')), {'CTRL', 'SHIFT'})
                 self.assertEqual(result['keys'][1]['action']['EmitEvent'], 'toggle-input-mode')
+                self.assertEqual(result['keys'][2], {
+                    'key': 'V', 'mods': 'CTRL|SHIFT', 'action': {'PasteFrom': 'Clipboard'}})
+                if 'apple' in triple:
+                    self.assertEqual(result['keys'][3], {
+                        'key': 'v', 'mods': 'SUPER', 'action': {'PasteFrom': 'Clipboard'}})
+                # Ctrl+v remains an application key; WEZ tables fall through
+                # to the global paste binding instead of maintaining duplicates.
+                for table in result['key_tables'].values():
+                    self.assertFalse(any('PasteFrom' in entry['action'] for entry in table
+                                         if isinstance(entry['action'], dict)))
 
     def test_toggle_is_persistent_and_exits_overlays_on_return(self):
         actions = self.probe()['toggle_actions']
@@ -249,13 +259,14 @@ return ok and config or w.config_builder()
         self.assertIn('WORKSPACES', keys['w']['action']['ShowLauncherArgs']['flags'])
         self.assertEqual(keys['[']['action'], 'ActivateCopyMode')
 
-    def test_mac_shortcuts_are_wez_only_and_close_outer_tabs(self):
+    def test_mac_copy_and_close_are_wez_only_but_paste_is_global(self):
         result = self.probe(triple='aarch64-apple-darwin')
         cmd = {entry['key']: entry for entry in result['key_tables']['wezterm']
                if entry['mods'] == 'SUPER'}
         self.assertTrue(cmd['w']['action']['CloseCurrentTab']['confirm'])
         self.assertEqual(cmd['c']['action']['CopyTo'], 'Clipboard')
-        self.assertFalse(any(entry['mods'] == 'SUPER' for entry in result['keys']))
+        self.assertEqual([entry for entry in result['keys'] if entry['mods'] == 'SUPER'], [
+            {'key': 'v', 'mods': 'SUPER', 'action': {'PasteFrom': 'Clipboard'}}])
 
 
 if __name__ == '__main__':

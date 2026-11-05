@@ -18,8 +18,8 @@ return function(config, wezterm)
   -- config.color_scheme = 'Catppuccin Mocha'
 
   -- Input routing ----------------------------------------------------------
-  -- APP reserves only fullscreen and the mode toggle. Add any extra outer
-  -- shortcut to config.key_tables.wezterm (WEZ-only), not config.keys (global).
+  -- APP reserves fullscreen, the mode toggle, and host-clipboard paste. Add extra
+  -- outer shortcuts to config.key_tables.wezterm (WEZ-only), not config.keys (global).
   -- Do not reintroduce config.leader or enable default bindings: either would
   -- intercept application keys in APP mode, and the shared config rejects it.
   -- table.insert(config.key_tables.wezterm, {

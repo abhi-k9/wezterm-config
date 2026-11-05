@@ -18,12 +18,16 @@ linking to these separate references.
 
 ## Input modes: WezTerm → Zellij → Neovim
 
-New windows start **APP**, forwarding ordinary application keys. The two always-on
-shortcuts are **Alt+Enter** for fullscreen and **Ctrl+Shift+F12** to toggle APP ↔ WEZ.
+New windows start **APP**, forwarding ordinary application keys. Always-on
+shortcuts are **Alt+Enter** for fullscreen, **Ctrl+Shift+F12** to toggle APP ↔ WEZ,
+and **Ctrl+Shift+V** to paste the host clipboard (**Cmd+V** also works on macOS).
 Plain **F12** reaches Zellij for its lock toggle, and one **Escape** reaches the
 application. There is no Escape leader.
 
-Toggle **WEZ** for outer-terminal clipboard/search/font/tab controls. In WEZ,
+Paste directly into the focused Zellij pane in APP; enter Insert mode first
+when pasting into Neovim. Plain Ctrl+V remains an application key.
+
+Toggle **WEZ** for outer-terminal copy/search/font/tab controls. In WEZ,
 **Ctrl+Shift+Space**, release, then a command key opens the launcher (`p`), creates
 an outer tab (`c`), closes an outer pane (`x`), etc. Return APP for daily editing.
 The mode is window-local; config reloads reset APP. OS-owned controls still apply.
@@ -150,7 +154,7 @@ python3 -m unittest discover -s tests -v
 
 Use `python` instead of `python3` where appropriate. Tests use a WezTerm binary
 on PATH, or the executable specified by `WEZTERM_BIN`. They exercise the real
-Lua/configuration APIs, the two-key APP allowlist, mode transitions, OS branches,
+Lua/configuration APIs, the APP shortcut allowlist, mode transitions, OS branches,
 optional overrides, legacy-override rejection, and error paths.
 Platform simulation validates configuration logic; test native shells, key
 events, and window effects on each OS as well.

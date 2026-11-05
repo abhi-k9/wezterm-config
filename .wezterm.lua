@@ -131,8 +131,8 @@ end
 -- The launcher also lists tabs and workspaces even when this menu is empty.
 
 -- Input routing: WezTerm -> Zellij -> Neovim --------------------------------
--- APP is the default in each window and after a config reload. Only the two
--- global shortcuts below are reserved. All other keyboard input follows the
+-- APP is the default in each window and after a config reload. Fullscreen,
+-- the mode toggle, and host-clipboard paste are reserved. Other input follows the
 -- normal terminal path to the application (subject to OS/terminal encoding).
 -- Never set a native config.leader: it is checked BEFORE key tables and would
 -- intercept Escape or another prefix even in APP mode.
@@ -144,7 +144,7 @@ local function key(key_name, mods, action)
 end
 
 -- A single global event toggles the current GUI window. Named tables fall
--- through to these globals, so fullscreen and the toggle work in both modes.
+-- through to these globals, so fullscreen, the toggle, and paste work in both modes.
 -- Clearing the stack also exits a pending command prefix. CopyMode Close is
 -- harmless outside the copy/search UI and releases that UI when returning APP.
 wezterm.on('toggle-input-mode', function(window, pane)
@@ -164,7 +164,13 @@ end)
 config.keys = {
   key('Enter', 'ALT', act.ToggleFullScreen),
   key('F12', 'CTRL|SHIFT', act.EmitEvent 'toggle-input-mode'),
+  -- Paste clipboard text into the focused terminal, including a Zellij pane,
+  -- without switching modes. Plain Ctrl+v still goes to the application.
+  key('V', 'CTRL|SHIFT', act.PasteFrom 'Clipboard'),
 }
+if is_macos then
+  table.insert(config.keys, key('v', 'SUPER', act.PasteFrom 'Clipboard'))
+end
 
 -- WEZ enables an explicit outer-terminal keymap. Plain F12 is deliberately
 -- absent: it reaches Zellij in both modes. Ordinary Escape is also unbound.
@@ -179,7 +185,6 @@ local wez_keys = {
     timeout_milliseconds = 2000, prevent_fallback = false,
   }),
   key('C', 'CTRL|SHIFT', act.CopyTo 'Clipboard'),
-  key('V', 'CTRL|SHIFT', act.PasteFrom 'Clipboard'),
   key('F', 'CTRL|SHIFT', act.Search 'CurrentSelectionOrEmptyString'),
   key('P', 'CTRL|SHIFT', act.ActivateCommandPalette),
   key('R', 'CTRL|SHIFT', act.ReloadConfiguration),
@@ -202,12 +207,11 @@ for index = 1, 9 do
     act.ActivateTab(index == 9 and -1 or index - 1)))
 end
 
--- macOS Cmd equivalents are explicit WEZ-only bindings. APP does not reserve
--- Cmd+c/v/etc for WezTerm; OS-owned shortcuts/menu actions remain OS-controlled.
+-- Other macOS Cmd equivalents are explicit WEZ-only bindings. Cmd+v is global
+-- above; OS-owned shortcuts/menu actions remain OS-controlled.
 if is_macos then
   for _, binding in ipairs {
     key('c', 'SUPER', act.CopyTo 'Clipboard'),
-    key('v', 'SUPER', act.PasteFrom 'Clipboard'),
     key('f', 'SUPER', act.Search 'CurrentSelectionOrEmptyString'),
     key('p', 'SUPER|SHIFT', act.ActivateCommandPalette),
     key('r', 'SUPER', act.ReloadConfiguration),
