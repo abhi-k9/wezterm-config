@@ -63,6 +63,7 @@
     .leader-layout strong{color:var(--lavender)}
     .steps kbd{margin:0 1px}
     .settings th{white-space:normal;width:35%}
+    .locations th{white-space:normal;width:26%}
     footer{display:flex;justify-content:space-between;gap:15px;margin-top:18px;padding-top:12px;
       border-top:1px solid var(--overlay);color:var(--muted);font-size:11px}
     @media(max-width:1180px){
@@ -241,12 +242,18 @@
     <section class="card wide" style="--accent:var(--green)" aria-labelledby="portable">
       <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="portable">Portable setup &amp; private profiles</h2><span class="badge">shared defaults · optional local layer</span></div>
       <div class="body">
-        <p>Use <code>~/.wezterm.lua</code> on Linux/macOS or <code>%USERPROFILE%\.wezterm.lua</code> on Windows for one consistent entry point. Test the checkout before installing it:</p>
+        <p>Clone into <code>~/wezterm-config</code> on Linux/macOS or <code>%USERPROFILE%\wezterm-config</code> on Windows. Copy the shared config to the home-directory location below; cloning alone does not activate it. The <a href="../docs/SETUP.md">setup guide</a> has OS-specific install, backup, and update commands.</p>
+        <table class="locations" aria-label="Active configuration locations">
+          <tr><th scope="row">Windows</th><td><code>%USERPROFILE%\.wezterm.lua</code><br><code>%USERPROFILE%\wezterm.local.lua</code> (optional)</td></tr>
+          <tr><th scope="row">Linux / macOS</th><td><code>~/.wezterm.lua</code><br><code>~/wezterm.local.lua</code> (optional)</td></tr>
+        </table>
+        <p style="margin-top:10px">Test a chosen configuration explicitly:</p>
         <pre><code>wezterm --config-file /path/to/.wezterm.lua show-keys --lua
 wezterm --config-file /path/to/.wezterm.lua start</code></pre>
         <p style="margin-top:10px"><span class="label">Shell selection:</span> Linux and macOS use the user's normal shell. Windows uses native Windows shells; the launcher offers Windows-only entries only on Windows. A separately installed shell can be selected in the local file.</p>
-        <p><span class="label">Machine-only tools:</span> put those commands in <code>wezterm.local.lua</code> beside the active <code>.wezterm.lua</code>. Copy the generic <code>wezterm.local.example.lua</code> as a starting point, then edit only the ignored local copy.</p>
+        <p><span class="label">Machine-only tools:</span> put those commands in <code>wezterm.local.lua</code> beside the active <code>.wezterm.lua</code>. Copy the generic <code>wezterm.local.example.lua</code> as a starting point, then edit the local copy.</p>
         <p>The local file returns <code>function(config, wezterm)</code> and runs after shared settings. Append profiles to <code>config.launch_menu</code> there, guarded by the platform or tool availability. Keep machine paths, internal identifiers, and credentials out of tracked files.</p>
+        <p><span class="label">Updates:</span> pull the checkout with <code>git pull --ff-only</code>, then copy its <code>.wezterm.lua</code> to your home directory again. Keep <code>wezterm.local.lua</code> in place; shared updates do not replace it. Private profiles come from your own storage and are not included in the repository.</p>
         <p class="note">If installing via a symlink or using a different config directory, place the local file inside the active <code>wezterm.config_dir</code> reported by WezTerm. After creating it for the first time, manually reload with <kbd>Ctrl+Shift+r</kbd> or <kbd>Cmd+r</kbd> on macOS. The ignored filename protects a file inside this checkout; always check Git status before committing.</p>
       </div>
     </section>
@@ -285,7 +292,7 @@ wezterm --config-file /path/to/.wezterm.lua start</code></pre>
   <footer>
     <span>Shared shortcuts plus selected built-in mode keys · local overrides take precedence.</span>
     <span>Catppuccin Macchiato · standalone / offline · print from your browser.</span>
-    <span><a href="https://wezterm.org/config/keys.html">Key reference</a> · <a href="https://wezterm.org/config/files.html">Config locations</a> · <a href="../README.md">Repository guide</a></span>
+    <span><a href="https://wezterm.org/config/keys.html">Key reference</a> · <a href="../docs/SETUP.md">Setup guide</a> · <a href="../README.md">Repository guide</a></span>
   </footer>
 </div>
 </body>

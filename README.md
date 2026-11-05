@@ -7,30 +7,28 @@ Open [the HTML cheatsheet](cheatsheets/wezterm-cheatsheet.html) in a browser for
 keybindings and common workflows. It is self-contained, works offline, adapts
 to smaller screens, and has a light print layout.
 
-## Try it before installing
+## Setup
 
-Install [WezTerm](https://wezterm.org/installation.html), then point it at this
-checkout. Replace the example path with your checkout's actual path; quote paths
-with spaces in your shell.
+Follow the [setup guide](docs/SETUP.md) for prerequisites, copy-and-paste commands,
+backups, private profiles, updates, and troubleshooting:
 
-```sh
-wezterm --config-file /path/to/wezterm-config/.wezterm.lua show-keys --lua
-wezterm --config-file /path/to/wezterm-config/.wezterm.lua start
-```
+- [Windows / PowerShell](docs/SETUP.md#windows-powershell)
+- [Linux](docs/SETUP.md#linux)
+- [macOS](docs/SETUP.md#macos)
 
-On Windows the same commands accept a quoted Windows path:
+The recommended layout keeps the clone in a subfolder and the active config in
+your home directory. Cloning alone does not make WezTerm load the checkout.
 
-```powershell
-wezterm --config-file 'C:\path\to\wezterm-config\.wezterm.lua' show-keys --lua
-wezterm --config-file 'C:\path\to\wezterm-config\.wezterm.lua' start
-```
+| File | Windows | Linux / macOS |
+| --- | --- | --- |
+| Repository | `%USERPROFILE%\wezterm-config\` | `~/wezterm-config/` |
+| Active shared config | `%USERPROFILE%\.wezterm.lua` | `~/.wezterm.lua` |
+| Optional private profile | `%USERPROFILE%\wezterm.local.lua` | `~/wezterm.local.lua` |
 
-For normal startup, copy `.wezterm.lua` to `~/.wezterm.lua` on Linux/macOS or
-`%USERPROFILE%\.wezterm.lua` on Windows. WezTerm also supports
-`$XDG_CONFIG_HOME/wezterm/wezterm.lua` or `~/.config/wezterm/wezterm.lua` on Unix.
-Avoid maintaining multiple active copies: config search precedence can make
-you edit a file that is not being loaded. An explicit `--config-file` is useful
-when diagnosing that. See [configuration locations](https://wezterm.org/config/files.html).
+The private profile lives beside the active config. Download it from your own
+storage, or use the generic local example; it is not distributed by this
+repository. An update copies only `.wezterm.lua`, leaving `wezterm.local.lua`
+untouched. The guide also explains how to test the checkout before installation.
 
 ## Customize shared settings
 
