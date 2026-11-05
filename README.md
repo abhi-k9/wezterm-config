@@ -25,10 +25,11 @@ your home directory. Cloning alone does not make WezTerm load the checkout.
 | Active shared config | `%USERPROFILE%\.wezterm.lua` | `~/.wezterm.lua` |
 | Optional private profile | `%USERPROFILE%\wezterm.local.lua` | `~/wezterm.local.lua` |
 
-The private profile lives beside the active config. Download it from your own
-storage, or use the generic local example; it is not distributed by this
-repository. An update copies only `.wezterm.lua`, leaving `wezterm.local.lua`
-untouched. The guide also explains how to test the checkout before installation.
+The private profile lives beside the active config. The repository includes a
+commented, generic [wezterm.local.lua](wezterm.local.lua); copy it to your home
+directory before adding private settings. An update copies only `.wezterm.lua`,
+leaving your home-directory `wezterm.local.lua` untouched. The guide also explains
+how to test the checkout before installation.
 
 ## Customize shared settings
 
@@ -51,7 +52,7 @@ WezTerm. Transparency and decorations depend on the OS/compositor; use opacity
 
 ## Keep machine-specific profiles local
 
-Copy [wezterm.local.example.lua](wezterm.local.example.lua) to
+Copy the versioned [wezterm.local.lua](wezterm.local.lua) to
 `wezterm.local.lua` beside the configuration WezTerm actually loads. For example,
 if using `~/.wezterm.lua`, the local file belongs at `~/wezterm.local.lua`.
 If using a symlink, check the active `wezterm.config_dir` in WezTerm's debug
@@ -67,15 +68,23 @@ return function(config, wezterm)
 end
 ```
 
-Workstation-only tools belong in this local layer. The example shows how to
+The repository copy is a public, no-op example: all overrides are commented out.
+Workstation-only tools belong in your installed copy. The example shows how to
 check the platform and the existence of a local initialization script before
 adding its launch-menu entry. Put a multi-step setup in that local wrapper;
 stop or report failures when later commands depend on earlier steps. The shared
 config then remains useful on machines where those tools do not exist.
 
-`.gitignore` excludes the local file and other `wezterm.local.*.lua` profiles,
-while retaining the generic example. Check `git status` before committing.
-Ignoring a file does not remove a previously tracked file from Git history.
+The checkout's `wezterm.local.lua` is tracked and is **not** protected by
+`.gitignore`. Keep its content generic; do not put private settings there.
+Other `wezterm.local.*.lua` variants remain ignored, but are not automatically
+loaded. Check `git status` before committing, including in any separate dotfiles
+repository that contains your home-directory copy.
+
+If you previously kept an ignored private `wezterm.local.lua` in the checkout,
+move it outside the checkout **before pulling this version**. Preserve an
+existing home-directory profile rather than overwriting it. See the
+[migration note](docs/SETUP.md#upgrading-from-the-ignored-local-file-layout).
 
 A missing local file is allowed. Read errors, syntax errors, an incorrect return
 type, and runtime errors surface instead of silently loading different settings.

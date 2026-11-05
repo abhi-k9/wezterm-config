@@ -6,7 +6,9 @@ local is_macos = wezterm.target_triple:find('apple') ~= nil
 
 -- Shared settings for Linux, Windows, and macOS.
 -- Edit these values directly, or override them in wezterm.local.lua beside
--- this file. That optional file is ignored by Git and is applied LAST.
+-- the installed config. The repository's local file is a tracked public
+-- example; keep private overrides in the installed copy outside this checkout.
+-- That optional local file is applied LAST.
 -- Reference: https://wezterm.org/config/files.html
 
 -- Fonts --------------------------------------------------------------------
@@ -118,7 +120,7 @@ if is_windows then
     { label = 'Windows PowerShell', args = { 'powershell.exe', '-NoLogo' } },
   }
 end
--- Add machine-specific tools to the ignored local file, not this menu.
+-- Add machine-specific tools to the installed local copy, outside this checkout.
 -- The launcher also lists tabs and workspaces even when this menu is empty.
 
 -- Keyboard -----------------------------------------------------------------
@@ -209,6 +211,8 @@ end)
 -- Optional private overrides -----------------------------------------------
 -- Fixed filename beside the loaded config, on all platforms. Explicit loadfile
 -- avoids accidentally finding an unrelated Lua module on package.path.
+-- The checkout includes a no-op example under this name. Home installations
+-- can use their own private copy or omit it entirely.
 -- Absence is fine; unreadable files, syntax errors, and runtime errors are not
 -- silently ignored. The local file must return function(config, wezterm).
 -- After creating the local file for the first time, manually reload with

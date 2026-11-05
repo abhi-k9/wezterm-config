@@ -28,6 +28,9 @@ continue with [private profiles](#optional-private-profile) and
 - Run the commands in a terminal on the machine being configured. Only follow
   one OS section. If `~/wezterm-config` already exists, reuse that checkout and
   follow [updates](#update-the-shared-config) instead of cloning over it.
+- On an older checkout, move any ignored private `wezterm.local.lua` out of the
+  checkout before pulling: that filename is now the tracked public example.
+  See the [migration note](#upgrading-from-the-ignored-local-file-layout).
 - If the active `.wezterm.lua` is a symlink, or you already use an XDG/alternate
   config location, inspect that setup first. The copy steps below assume a
   regular home-directory config file; copying onto a symlink can modify its
@@ -147,7 +150,13 @@ launch profiles, choose **one** of these approaches:
 - Download/copy your existing private profile from your own storage. Save it as
   `wezterm.local.lua` in your home directory, beside the active `.wezterm.lua`.
   This repository does not contain a private-profile download or private commands.
-- Start with the generic example below, then edit the home-directory copy.
+- Copy the repository's commented [wezterm.local.lua](../wezterm.local.lua)
+  example using the commands below, then edit the home-directory copy.
+
+The repository copy is tracked. All its overrides are commented out, so it is a
+no-op on every OS. Keep it generic and make private changes only in your installed
+copy outside this checkout. A checkout opened with `--config-file` loads this
+public example; it does not automatically find your home-directory overrides.
 
 Keep the exact filename: on Windows, ensure it was not saved as
 `wezterm.local.lua.txt`. Install a work-machine profile only on machines with its
@@ -160,7 +169,7 @@ Windows / PowerShell:
 
 ```powershell
 if (-not (Test-Path -LiteralPath "$HOME\wezterm.local.lua")) {
-    Copy-Item -LiteralPath "$HOME\wezterm-config\wezterm.local.example.lua" -Destination "$HOME\wezterm.local.lua" -ErrorAction Stop
+    Copy-Item -LiteralPath "$HOME\wezterm-config\wezterm.local.lua" -Destination "$HOME\wezterm.local.lua" -ErrorAction Stop
 }
 ```
 
@@ -168,7 +177,7 @@ Linux / macOS:
 
 ```sh
 if [ ! -e "$HOME/wezterm.local.lua" ]; then
-    cp "$HOME/wezterm-config/wezterm.local.example.lua" "$HOME/wezterm.local.lua"
+    cp "$HOME/wezterm-config/wezterm.local.lua" "$HOME/wezterm.local.lua"
 fi
 ```
 
@@ -181,10 +190,12 @@ After creating it for the first time, reload manually with `Ctrl+Shift+r`, or
 `Cmd+r` on macOS. Existing local files are watched for subsequent edits. Read,
 syntax, return-type, and runtime errors surface rather than being silently ignored.
 
-With this layout, the active private file is outside the checkout. If you
-deliberately run the checkout's config directly, its private file instead belongs
-at the checkout root, where `.gitignore` excludes it. Always check `git status`
-before committing; another dotfiles repository may need its own ignore rule.
+With this layout, the active private file is outside the checkout. If you run the
+checkout's config directly, it loads the tracked public example at the checkout
+root. Install the home-directory copy before adding private settings. Other
+`wezterm.local.*.lua` variants are still ignored, but are not loaded automatically.
+Always check `git status` before committing; another dotfiles repository may need
+its own ignore rule for the installed home-directory file.
 
 ## Validate and start
 
@@ -217,6 +228,22 @@ sends one Escape to an application. See the
 [HTML cheatsheet](../cheatsheets/wezterm-cheatsheet.html) for other workflows.
 
 ## Update the shared config
+
+### Upgrading from the ignored local-file layout
+
+Earlier versions ignored a checkout-root `wezterm.local.lua` and shipped the
+template as `wezterm.local.example.lua`. The template is now promoted to the
+tracked `wezterm.local.lua` filename. Before pulling this change, move any private
+file with that name outside the checkout so a Git update cannot replace it or
+lead to private changes being committed. Use the home-directory location from
+the setup instructions. If a home-directory profile already exists, back up both
+files outside the checkout and merge their settings rather than replacing it.
+
+The recommended home-directory layout needs no migration: its private file is
+already outside this repository. You do not need to copy the new public example
+over a working private profile.
+
+### Routine updates
 
 The home-directory file is a copy: `git pull` alone does not update the active
 configuration. Keep personal edits in `wezterm.local.lua`; if you edited the

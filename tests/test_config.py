@@ -135,9 +135,15 @@ return ok and config or w.config_builder()
         self.assertEqual(result['font_size'], 19)
         self.assertEqual(result['launch_menu'][0]['label'], 'Example')
 
-    def test_generic_example_loads_without_requiring_external_tools(self):
-        example = (ROOT / 'wezterm.local.example.lua').read_text(encoding='utf-8')
-        self.assertEqual(self.probe(local=example)['font_size'], 14)
+    def test_versioned_local_example_is_safe_on_every_platform(self):
+        example = (ROOT / 'wezterm.local.lua').read_text(encoding='utf-8')
+        for triple in ['x86_64-unknown-linux-gnu', 'aarch64-apple-darwin',
+                       'x86_64-pc-windows-msvc']:
+            with self.subTest(triple=triple):
+                result = self.probe(triple=triple, local=example)
+                self.assertEqual(result['font_size'], 14)
+                self.assertIs(result['default_prog'], False)
+                self.assertEqual(len(result['launch_menu']), 2 if 'windows' in triple else 0)
 
     def test_modifier_leader_example_updates_forwarding_binding(self):
         result = self.probe(local='''return function(config, wezterm)

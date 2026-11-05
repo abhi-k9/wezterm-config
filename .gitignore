@@ -1,7 +1,7 @@
-# Machine-local shells, paths, and profiles must stay off Git.
-/wezterm.local.lua
+# wezterm.local.lua is a tracked, public example. Keep private edits in the
+# installed home-directory copy, outside this checkout. Other local variants
+# remain ignored; they are not automatically loaded by the shared config.
 /wezterm.local.*.lua
-!/wezterm.local.example.lua
 
 # Local editor/OS artifacts.
 .DS_Store

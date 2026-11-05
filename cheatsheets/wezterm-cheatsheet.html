@@ -116,7 +116,7 @@
         <p><strong><kbd>Esc</kbd> → key</strong> activates a terminal action. For example, <kbd>Esc</kbd> then <kbd>c</kbd> opens a tab. The wave in the tab bar indicates that the leader is active.</p>
         <p class="important"><strong>Escape changes application input.</strong> A single <kbd>Esc</kbd> is consumed; timeout does not send it to the app. Press <kbd>Esc</kbd> <kbd>Esc</kbd> to send one Escape. Unbound keys after the leader are also consumed.</p>
         <p class="note">Hold modifiers shown with <strong>+</strong> together; arrows <strong>→</strong> between keycaps mean a sequence. “Leader + key” below always means a sequence, not holding Escape.</p>
-        <p class="note">If that interrupts your editor, use the complete <kbd>Ctrl+a</kbd> alternative in <code>wezterm.local.example.lua</code>. It updates the leader and its double-press forwarding shortcut together.</p>
+        <p class="note">If that interrupts your editor, use the complete <kbd>Ctrl+a</kbd> alternative in the installed copy of <code>wezterm.local.lua</code>. It updates the leader and its double-press forwarding shortcut together.</p>
       </div>
     </section>
 
@@ -251,10 +251,10 @@
         <pre><code>wezterm --config-file /path/to/.wezterm.lua show-keys --lua
 wezterm --config-file /path/to/.wezterm.lua start</code></pre>
         <p style="margin-top:10px"><span class="label">Shell selection:</span> Linux and macOS use the user's normal shell. Windows uses native Windows shells; the launcher offers Windows-only entries only on Windows. A separately installed shell can be selected in the local file.</p>
-        <p><span class="label">Machine-only tools:</span> put those commands in <code>wezterm.local.lua</code> beside the active <code>.wezterm.lua</code>. Copy the generic <code>wezterm.local.example.lua</code> as a starting point, then edit the local copy.</p>
+        <p><span class="label">Machine-only tools:</span> copy the repository's commented <code>wezterm.local.lua</code> beside your installed home-directory <code>.wezterm.lua</code>, then edit that copy. The repository file is a tracked public example; it enables no overrides by default.</p>
         <p>The local file returns <code>function(config, wezterm)</code> and runs after shared settings. Append profiles to <code>config.launch_menu</code> there, guarded by the platform or tool availability. Keep machine paths, internal identifiers, and credentials out of tracked files.</p>
         <p><span class="label">Updates:</span> pull the checkout with <code>git pull --ff-only</code>, then copy its <code>.wezterm.lua</code> to your home directory again. Keep <code>wezterm.local.lua</code> in place; shared updates do not replace it. Private profiles come from your own storage and are not included in the repository.</p>
-        <p class="note">If installing via a symlink or using a different config directory, place the local file inside the active <code>wezterm.config_dir</code> reported by WezTerm. After creating it for the first time, manually reload with <kbd>Ctrl+Shift+r</kbd> or <kbd>Cmd+r</kbd> on macOS. The ignored filename protects a file inside this checkout; always check Git status before committing.</p>
+        <p class="note">If using a different config directory, place the private copy inside the active <code>wezterm.config_dir</code> outside this checkout. After creating it for the first time, manually reload with <kbd>Ctrl+Shift+r</kbd> or <kbd>Cmd+r</kbd> on macOS. If you kept an ignored private file at the checkout root on an older version, move it out before pulling this change. Check Git status before committing.</p>
       </div>
     </section>
 

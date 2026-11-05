@@ -1,9 +1,18 @@
--- Copy to wezterm.local.lua BESIDE the config WezTerm actually loads.
--- The local file is ignored by Git. Keep private paths and profiles there;
--- this example intentionally contains no workstation-specific configuration.
--- Missing local file = shared defaults. A broken local file surfaces an error.
+-- Public local-configuration example: the repository copy is TRACKED by Git.
+-- Every override below is commented out, so loading this file changes nothing.
+-- It is safe to load from the checkout on Linux, Windows, and macOS.
+--
+-- To customize one machine, copy this file beside your INSTALLED .wezterm.lua
+-- (normally ~/wezterm.local.lua or %USERPROFILE%\wezterm.local.lua), then edit
+-- that home-directory copy. Keep private paths/commands out of the repository
+-- copy, including commented examples. See docs/SETUP.md for all OS commands.
+--
+-- This function runs AFTER the shared settings. A missing installed local file
+-- is fine; syntax/runtime errors in a present file deliberately surface.
 return function(config, wezterm)
-  -- Preferences can override any earlier shared setting:
+  -- Appearance --------------------------------------------------------------
+  -- Uncomment a setting in the installed copy to replace the shared value.
+  -- Font size is in points; opacity 1.0 is opaque (no compositor required).
   -- config.font_size = 16
   -- config.window_background_opacity = 1.0
   -- config.color_scheme = 'Catppuccin Mocha'
@@ -17,19 +26,24 @@ return function(config, wezterm)
   --   action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' },
   -- }
 
-  -- Shell override: choose only executables actually installed on THIS machine.
+  -- Shells ------------------------------------------------------------------
+  -- Leave default_prog unset to use WezTerm's platform default. If overriding
+  -- it, choose only executables actually installed on THIS machine.
   -- if wezterm.target_triple:find('windows') then
   --   config.default_prog = { 'pwsh.exe', '-NoLogo' } -- Requires PowerShell 7.
   -- elseif wezterm.target_triple:find('apple') then
   --   config.default_prog = { '/bin/zsh', '-l' }
+  -- elseif wezterm.target_triple:find('linux') then
+  --   config.default_prog = { '/bin/bash', '-l' } -- Only if bash is installed.
   -- end
 
+  -- Machine-only launcher ---------------------------------------------------
   -- Workstation tools: put initialization in a local wrapper script. Checking
   -- for that script keeps its menu entry off machines where it is unavailable.
   -- For dependent setup steps, the wrapper should stop/report on failure instead
   -- of continuing through an incompletely initialized environment.
   -- if wezterm.target_triple:find('windows') then
-  --   local script = [[C:\path\to\local-init.cmd]] -- Replace ONLY in the local copy.
+  --   local script = [[C:\path\to\local-init.cmd]] -- Replace ONLY in the installed copy.
   --   local file = io.open(script, 'r')
   --   if file then
   --     file:close()
