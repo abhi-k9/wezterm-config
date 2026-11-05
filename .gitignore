@@ -1,0 +1,10 @@
+# Machine-local shells, paths, and profiles must stay off Git.
+/wezterm.local.lua
+/wezterm.local.*.lua
+!/wezterm.local.example.lua
+
+# Local editor/OS artifacts.
+.DS_Store
+Thumbs.db
+*.swp
+__pycache__/
