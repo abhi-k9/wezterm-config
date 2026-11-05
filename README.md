@@ -1,7 +1,7 @@
 # WezTerm configuration
 
 A documented configuration for Linux, Windows, and macOS, with Catppuccin
-Macchiato, a bottom tab bar, and leader shortcuts for tabs, panes, and workspaces.
+Macchiato, a visible APP/WEZ input badge, and controls for outer tabs/panes when needed.
 
 Open a focused HTML cheatsheet in a browser:
 
@@ -15,6 +15,23 @@ Each sheet has inline styling, works offline, adapts to smaller screens, and has
 a light print layout. Download the companion files together for local navigation.
 The [original cheatsheet URL](cheatsheets/wezterm-cheatsheet.html) is now an overview
 linking to these separate references.
+
+## Input modes: WezTerm → Zellij → Neovim
+
+New windows start **APP**, forwarding ordinary application keys. The two always-on
+shortcuts are **Alt+Enter** for fullscreen and **Ctrl+Shift+F12** to toggle APP ↔ WEZ.
+Plain **F12** reaches Zellij for its lock toggle, and one **Escape** reaches the
+application. There is no Escape leader.
+
+Toggle **WEZ** for outer-terminal clipboard/search/font/tab controls. In WEZ,
+**Ctrl+Shift+Space**, release, then a command key opens the launcher (`p`), creates
+an outer tab (`c`), closes an outer pane (`x`), etc. Return APP for daily editing.
+The mode is window-local; config reloads reset APP. OS-owned controls still apply.
+
+See [the input-routing guide](docs/INPUT.md) for the complete mode contract,
+clipboard, scrolling, closing, customization, and migration from the old leader.
+The Zellij F12 behavior assumes the companion configuration binds it; this repo
+does not install or change Zellij/Neovim.
 
 ## Setup
 
@@ -50,7 +67,7 @@ tradeoffs, and useful alternatives. The main groups are:
 - Window controls, padding, initial grid size, and font-resize behavior.
 - Tab-bar position, style, title width, and zero-based indices.
 - Cursor style, blink interval, scrollbar, scrollback, bell, and close behavior.
-- Native shells, platform-specific launch choices, leader keys, and shortcuts.
+- Native shells, platform-specific launch choices, input modes, and shortcuts.
 
 The shared config leaves `default_prog` unset, allowing WezTerm to choose its
 platform default shell. Windows-specific launch choices are created only on
@@ -97,39 +114,28 @@ existing home-directory profile rather than overwriting it. See the
 
 A missing local file is allowed. Read errors, syntax errors, an incorrect return
 type, and runtime errors surface instead of silently loading different settings.
-After creating the file for the first time, reload with `Ctrl+Shift+r` or `Cmd+r`
-on macOS. Existing files are registered for automatic reload on edits.
+After creating the file for the first time, toggle WEZ, then reload with
+`Ctrl+Shift+r` or `Cmd+r` on macOS. Reload returns APP. Existing files are
+registered for automatic reload on edits.
 
 ## Daily use
 
-The default leader is **Escape** with a two-second timeout. Press Escape, release
-it, then press the action key. A single Escape is consumed; timing out does not
-send it to the application. Double Escape sends one literal Escape. Unmapped
-keys after the leader are also consumed.
+Use Zellij for its inner terminal panes/tabs/sessions, and Neovim for editing.
+In Zellij Normal, Ctrl+S enters its Scroll mode; Ctrl+B/Ctrl+F page, `u`/`d` move by
+half-pages, and Ctrl+C returns to live output and Normal. Unlock Zellij with F12
+first if it is Locked. These keys refer to the companion/default Zellij map.
 
-If that interferes with your editor, the local example includes a complete
-`Ctrl+a` alternative. It updates the double-leader forwarding shortcut as well.
-Changing the shared leader before the bindings are constructed also updates the
-forwarding shortcut automatically. `Ctrl+a` has its own application conflicts;
-choose according to your workflow.
+The right-edge WezTerm scrollbar covers the active outer pane, not the independent
+history of each inner Zellij pane. For a direct outer shell, toggle WEZ and use
+Shift+PageUp/PageDown or its copy mode. See [scrolling keys](cheatsheets/wezterm-keymap.html#scrolling)
+and [the history workflow](cheatsheets/wezterm-workflows.html#workflow-scroll).
 
-For pane, tab, and window close actions, see the
-[closing keymap](cheatsheets/wezterm-keymap.html#closing) and
-[closing workflow](cheatsheets/wezterm-workflows.html#workflow-close). A pane close
-affects one session; a tab close affects all its panes; a window close affects
-all its tabs in the default local setup. Confirmation can be skipped for idle
-shells. The [architecture sheet](cheatsheets/wezterm-architecture.html#lifetime)
-explains lifetime, close cascades, and how remote/persistent mux setups differ.
-
-The complete shortcut catalog belongs to the keymap, task sequences to workflows,
-and object relationships to architecture. Local overrides may change the defaults.
-
-The scrollbar is enabled in the window's right-hand padding. Use
-`Shift+PageUp` / `Shift+PageDown` for quick paging, or see
-[scrolling keys](cheatsheets/wezterm-keymap.html#scrolling) and the
-[history workflow](cheatsheets/wezterm-workflows.html#workflow-scroll) for copy-mode
-jumps and compact Mac keyboard equivalents. The active pane retains 10,000
-scrollback lines by default; a local override can change that limit.
+For closing, choose the right layer: Zellij Normal, Ctrl+P then `x` closes an inner
+pane; Ctrl+T then `x` closes an inner tab. WEZ prefix `x` closes an outer pane, and
+WEZ Ctrl+Shift+W/Cmd+W closes an outer tab. Native window close affects all outer
+tabs. An outer close disconnects its Zellij client. See the [closing keymap](cheatsheets/wezterm-keymap.html#closing),
+[workflow](cheatsheets/wezterm-workflows.html#workflow-close), and
+[architecture](cheatsheets/wezterm-architecture.html#lifetime).
 
 ## Checks
 
@@ -144,6 +150,7 @@ python3 -m unittest discover -s tests -v
 
 Use `python` instead of `python3` where appropriate. Tests use a WezTerm binary
 on PATH, or the executable specified by `WEZTERM_BIN`. They exercise the real
-Lua/configuration APIs, platform branches, optional overrides, and error paths.
+Lua/configuration APIs, the two-key APP allowlist, mode transitions, OS branches,
+optional overrides, legacy-override rejection, and error paths.
 Platform simulation validates configuration logic; test native shells, key
 events, and window effects on each OS as well.

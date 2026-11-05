@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark light">
-  <meta name="description" content="Shortcut reference · shared bindings, built-in bindings, and OS controls">
-  <title>WezTerm — Keymap</title>
-  <style>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="description" content="Shortcut lookup · APP routing, WEZ controls, and nested applications">
+<title>WezTerm — Keymap</title><style>
     :root {
       /* Catppuccin Macchiato; overlay2 keeps small notes readable on dark surfaces. */
       --bg:#24273a;--surface:#1e2030;--overlay:#363a4f;--muted:#a5adcb;
@@ -103,127 +99,94 @@
     figcaption{margin-top:9px;color:var(--muted);font-size:12px}
     .intro{margin:0 0 18px;color:var(--subtext);max-width:100ch}
     @media print{nav{display:none}.intro{font-size:10px;margin-bottom:10px}figcaption{font-size:9px}}
-  </style>
-</head>
-<body>
-<div class="sheet">
-  <header>
-    <div><h1>WezTerm — Keymap</h1><p class="subtitle">Shortcut reference · shared bindings, built-in bindings, and OS controls</p></div>
-    <div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>Shared config targets WezTerm 20240203-110809-5046fc22 or newer.</p></div>
-  </header>
-  <nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html" aria-current="page">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav>
-  <p class="intro">Look up an action here. <strong>Leader</strong> means press Escape, release, then press the next key. For task sequences use <a href="wezterm-workflows.html">workflows</a>; for pane/tab/window relationships use <a href="wezterm-architecture.html">architecture</a>.</p>
-  <main class="grid"><section class="card full" aria-labelledby="leader">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="leader">Start here — the leader key</h2><span class="badge">one action per prefix · 2-second timeout</span></div>
-      <div class="body leader-layout">
-        <p><strong><kbd>Esc</kbd> → key</strong> activates a terminal action. For example, <kbd>Esc</kbd> then <kbd>c</kbd> opens a tab. The wave in the tab bar indicates that the leader is active.</p>
-        <p class="important"><strong>Escape changes application input.</strong> A single <kbd>Esc</kbd> is consumed; timeout does not send it to the app. Press <kbd>Esc</kbd> <kbd>Esc</kbd> to send one Escape. Unbound keys after the leader are also consumed.</p>
-        <p class="note">Hold modifiers shown with <strong>+</strong> together; arrows <strong>→</strong> between keycaps mean a sequence. “Leader + key” below always means a sequence, not holding Escape.</p>
-        <p class="note">If that interrupts your editor, use the complete <kbd>Ctrl+a</kbd> alternative in the installed copy of <code>wezterm.local.lua</code>. It updates the leader and its double-press forwarding shortcut together.</p>
-      </div>
-    </section>
-<section class="card full" style="--accent:var(--red)" aria-labelledby="closing">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="closing">Close a pane, tab, or window</h2></div>
-  <div class="body">
-<table class="scope-table" aria-label="Close shortcuts by scope">
-  <tr><th scope="row">Pane</th><td><kbd>Esc</kbd> → <kbd>x</kbd> — close the focused pane (<code>CloseCurrentPane</code>, shared binding).</td></tr>
-  <tr><th scope="row">Tab</th><td><kbd>Ctrl+Shift+W</kbd> on Windows/Linux; <kbd>Cmd+W</kbd> on macOS — close the current tab and <strong>all its panes</strong> (<code>CloseCurrentTab</code>, built-in).</td></tr>
-  <tr><th scope="row">Window</th><td>Use the native title-bar close button. <kbd>Alt+F4</kbd> is the Windows window-close shortcut and is common on Linux window managers. On macOS use the red close button. These target the window, including all its tabs.</td></tr>
-</table>
-<p class="note" style="margin-top:10px">Pane/tab actions request confirmation with <code>confirm = true</code>; native window closing uses <code>window_close_confirmation = 'AlwaysPrompt'</code>. A prompt can still be skipped for idle shells or other processes WezTerm considers safe. There is no custom window-close binding in this config.</p>
-<p class="note">Closing the last pane also removes its tab; closing the last tab also removes its window. See <a href="wezterm-architecture.html#lifetime">architecture: close scope and lifetime</a> and the <a href="wezterm-workflows.html#workflow-close">closing workflow</a>.</p>
-</div>
-</section>
-<section class="card blue" style="--accent:var(--blue)" aria-labelledby="panes">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="panes">Panes — split, focus, resize</h2><span class="badge">leader first</span></div>
-      <table aria-label="Pane shortcuts">
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>Shift+|</kbd></th><td>Split side by side; type the <strong>|</strong> symbol with Shift held.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>-</kbd></th><td>Split into an upper and lower pane.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>h</kbd> / <kbd>l</kbd></th><td>Focus left / right.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>j</kbd> / <kbd>k</kbd></th><td>Focus down / up.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>←</kbd> <kbd>↓</kbd> <kbd>↑</kbd> <kbd>→</kbd></th><td>Adjust the focused pane in that direction by 5 cells.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>f</kbd></th><td>Show pane labels; select one to focus.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>z</kbd></th><td>Zoom the current pane; repeat to restore the split view.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>x</kbd></th><td>Close the focused pane; requests confirmation. Closing the last pane also closes its tab.</td></tr>
-      </table>
-      <div class="body note">Each resize needs a fresh leader. “Horizontal split” in WezTerm means side by side; “vertical split” means upper/lower.</div>
-    </section>
-<section class="card green" style="--accent:var(--green)" aria-labelledby="tabs">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="tabs">Tabs &amp; windows</h2><span class="badge">zero-based tabs</span></div>
-      <table aria-label="Tab shortcuts">
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>c</kbd></th><td>New tab in the current pane's domain.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>b</kbd> / <kbd>n</kbd></th><td>Previous / next tab.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>0</kbd> … <kbd>9</kbd></th><td>Activate tab index 0–9. Index 0 is the first tab; index 1 is the second.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Tab</kbd></th><td>Next tab <span class="note">(built-in)</span>.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+Tab</kbd></th><td>Previous tab <span class="note">(built-in)</span>.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+n</kbd></th><td>New window <span class="note">(built-in; Cmd+n on macOS)</span>.</td></tr>
-      </table>
-      <div class="body note">Built-in number shortcuts keep their own convention: <kbd>Ctrl+Shift+1</kbd> selects the first tab, while <kbd>Leader</kbd> <kbd>1</kbd> selects the second. The tab bar is always visible at the bottom.</div>
-    </section>
-<section class="card mauve" style="--accent:var(--mauve)" aria-labelledby="launchers">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="launchers">Launchers &amp; workspaces</h2><span class="badge">leader first</span></div>
-      <table aria-label="Launcher shortcuts">
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>p</kbd></th><td>Open the launcher: profiles, tabs, and workspaces.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>w</kbd></th><td>Show the workspace selector.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>Shift+?</kbd></th><td>Open the command palette; type a command to find it.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+p</kbd></th><td>Command palette without the leader.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>r</kbd></th><td>Reload configuration.</td></tr>
-      </table>
-      <div class="body note">See <a href="wezterm-architecture.html#workspaces">architecture: workspaces</a> for grouping and persistence, or <a href="wezterm-workflows.html#workflow-projects">workflows: separate projects</a> for the task steps.</div>
-    </section>
-<section class="card teal" style="--accent:var(--teal)" aria-labelledby="clipboard">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="clipboard">Clipboard &amp; search</h2><span class="badge">system clipboard</span></div>
-      <table aria-label="Clipboard and search shortcuts">
-        <tr><th scope="row"><kbd>Ctrl+Shift+c</kbd></th><td>Copy the selected text.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+v</kbd></th><td>Paste clipboard contents into the focused application.</td></tr>
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>s</kbd></th><td>Search scrollback; selected text seeds the query.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+f</kbd></th><td>Open the same search without the leader.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+n</kbd> / <kbd>Ctrl+p</kbd></th><td>Next / previous match while the search UI is open.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+r</kbd></th><td>Cycle the search matching mode while searching.</td></tr>
-      </table>
-      <div class="body note">On macOS, built-in <kbd>Cmd+c</kbd>, <kbd>Cmd+v</kbd>, and <kbd>Cmd+f</kbd> remain available. A terminal application that captures mouse input may require holding Shift to select terminal text.</div>
-    </section>
-<section class="card blue" style="--accent:var(--blue)" aria-labelledby="scrolling">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="scrolling">Scroll quickly — keyboard</h2><span class="badge">built-in bindings</span></div>
-  <table aria-label="Fast scrollback shortcuts">
-    <tr class="divider"><th colspan="2">Normal terminal — no leader</th></tr>
-    <tr><th scope="row"><kbd>Shift+PageUp</kbd></th><td>Scroll up one page in the active pane.</td></tr>
-    <tr><th scope="row"><kbd>Shift+PageDown</kbd></th><td>Scroll down one page toward the latest output.</td></tr>
-    <tr class="divider"><th colspan="2">Copy mode — enter with Leader, [</th></tr>
-    <tr><th scope="row"><kbd>Ctrl+b</kbd> / <kbd>Ctrl+f</kbd></th><td>Up / down one page. Plain PageUp / PageDown also work in this mode.</td></tr>
-    <tr><th scope="row"><kbd>Ctrl+u</kbd> / <kbd>Ctrl+d</kbd></th><td>Up / down half a page.</td></tr>
-    <tr><th scope="row"><kbd>g</kbd> / <kbd>Shift+g</kbd></th><td>Jump to the oldest / newest retained scrollback.</td></tr>
-    <tr><th scope="row"><kbd>q</kbd></th><td>Leave copy mode without copying.</td></tr>
-  </table>
-  <div class="body note">On compact Mac keyboards, <kbd>Fn+↑</kbd> / <kbd>Fn+↓</kbd> send PageUp / PageDown. Add Shift for normal terminal paging; Ctrl+b / Ctrl+f need no Fn in copy mode. Plain Ctrl+PageUp / Ctrl+PageDown switch tabs, so use the Shift paging bindings above.</div>
-  <div class="body note">The shared scrollbar occupies the window's right-hand padding. See <a href="wezterm-workflows.html#workflow-scroll">the scrolling workflow</a> for returning to live output and <a href="wezterm-architecture.html#scrollback">architecture: retained history</a> for limits and full-screen applications.</div>
-</section>
-<section class="card yellow" style="--accent:var(--yellow)" aria-labelledby="copy-mode">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="copy-mode">Copy mode — keyboard selection</h2><span class="badge">built-in mode keys</span></div>
-      <table aria-label="Copy mode shortcuts">
-        <tr><th scope="row"><kbd>Leader</kbd> <kbd>[</kbd></th><td>Enter copy mode; subsequent keys work inside this mode.</td></tr>
-        <tr><th scope="row"><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> / arrows</th><td>Move left, down, up, right.</td></tr>
-        <tr><th scope="row"><kbd>v</kbd> / <kbd>Shift+v</kbd></th><td>Start a character / whole-line selection.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+v</kbd></th><td>Start a rectangular block selection.</td></tr>
-        <tr><th scope="row"><kbd>g</kbd> / <kbd>Shift+g</kbd></th><td>Go to the top / bottom of scrollback.</td></tr>
-        <tr><th scope="row"><kbd>PageUp</kbd> / <kbd>PageDown</kbd></th><td>Move through output one page at a time.</td></tr>
-        <tr><th scope="row"><kbd>y</kbd></th><td>Copy the selection and leave copy mode.</td></tr>
-        <tr><th scope="row"><kbd>q</kbd></th><td>Leave copy mode without copying.</td></tr>
-      </table>
-      <div class="body note">These are copy-mode bindings, not shell commands. Copy mode is useful when mouse selection is awkward or you want an exact line/block selection.</div>
-    </section>
-<section class="card peach" style="--accent:var(--peach)" aria-labelledby="everyday">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="everyday">Everyday controls</h2><span class="badge">no leader</span></div>
-      <table aria-label="Everyday shortcuts">
-        <tr><th scope="row"><kbd>Ctrl+Shift+=</kbd></th><td>Increase font size (the + key on a US keyboard).</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+-</kbd></th><td>Decrease font size.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+0</kbd></th><td>Reset font size to the configured value.</td></tr>
-        <tr><th scope="row"><kbd>Ctrl+Shift+r</kbd></th><td>Reload configuration now; automatic reload also watches saved edits.</td></tr>
-        <tr><th scope="row"><kbd>Alt+Enter</kbd></th><td>Toggle fullscreen <span class="note">(built-in; OS shortcuts can take precedence)</span>.</td></tr>
-      </table>
-      <div class="body note">The Ctrl+Shift shortcuts are explicitly configured across platforms. macOS built-in Cmd shortcuts remain enabled. Font-size shortcuts change the current window; edit <code>font_size</code> for the persistent default.</div>
-    </section></main>
-  <footer><span>Private home-directory overrides may change the shared settings.</span><span>Each sheet has its own focus; companion links open the other sheets.</span><span><a href="../docs/SETUP.md">Setup guide</a> · <a href="../README.md">Repository guide</a> · <a href="https://wezterm.org/config/keys.html">Official key reference</a></span></footer>
-</div>
-</body>
-</html>
+
+.card:not(.full):not(.wide) .scope-table th{width:46%}
+@media(max-width:700px){.scope-table.routing-keys th{width:46%}}
+</style>
+</head><body><div class="sheet">
+<header><div><h1>WezTerm — Keymap</h1><p class="subtitle">Shortcut lookup · APP routing, WEZ controls, and nested applications</p></div><div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>APP by default · WEZ controls on demand</p></div></header>
+<nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html" aria-current="page">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav><p class="intro">Check the <strong>APP / WEZ</strong> badge first. Only fullscreen and the mode toggle are always reserved. Key tables, workflow steps, and architecture concepts have separate sheets.</p>
+<main class="grid">
+<section class="card full" style="--accent:var(--teal)" aria-labelledby="routing"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="routing">Always on — two outer shortcuts</h2></div><div class="body">
+<table class="scope-table routing-keys" aria-label="Global key routing">
+<tr><th scope="row"><kbd>Alt+Enter</kbd></th><td>Toggle WezTerm fullscreen in APP and WEZ.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+F12</kbd></th><td>Toggle the current GUI window between APP and WEZ.</td></tr>
+<tr><th scope="row"><kbd>F12</kbd></th><td>Forwarded for Zellij’s Normal/Locked toggle; does not change WezTerm mode.</td></tr>
+<tr><th scope="row"><kbd>Esc</kbd></th><td>Sent onward immediately. No Escape leader or double-press workaround.</td></tr>
+</table><p class="note" style="margin-top:10px">APP reserves only the first two chords. WEZ adds the controls below. On compact Mac keyboards F12 may require Fn. OS shortcuts and native menu actions remain OS-controlled. Zellij’s F12 lock requires its own binding.</p>
+</div></section>
+<section class="card " style="--accent:var(--blue)" aria-labelledby="wez-controls"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="wez-controls">WEZ only — clipboard, view, and reload</h2></div><div class="body">
+<table class="scope-table" aria-label="WEZ direct controls">
+<tr><th scope="row"><kbd>Ctrl+Shift+c</kbd> / <kbd>v</kbd></th><td>Copy / paste host clipboard; macOS Cmd+c / Cmd+v.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+f</kbd></th><td>Outer-terminal search; macOS Cmd+f.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+p</kbd></th><td>Command palette; macOS Cmd+Shift+p.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+=</kbd> / <kbd>-</kbd> / <kbd>0</kbd></th><td>Font size increase / decrease / reset; macOS Cmd+= / - / 0.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+r</kbd></th><td>Reload; macOS Cmd+r. Reload resets input modes to APP.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+l</kbd></th><td>Debug overlay.</td></tr>
+</table><p class="note" style="margin-top:10px">These keyboard actions are not reserved in APP. WezTerm’s own copy/search/picker UI temporarily handles its UI keys; toggling APP closes copy/search.</p>
+</div></section>
+<section class="card " style="--accent:var(--green)" aria-labelledby="tabs"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="tabs">WEZ only — outer tabs and windows</h2></div><div class="body">
+<table class="scope-table" aria-label="Outer tab controls">
+<tr><th scope="row"><kbd>Ctrl+Shift+t</kbd></th><td>New outer tab; macOS Cmd+t.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+n</kbd></th><td>New native window; macOS Cmd+n. The new window starts APP.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Tab</kbd> / <kbd>Ctrl+Shift+Tab</kbd></th><td>Next / previous outer tab.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+1…8</kbd></th><td>Outer tabs 1–8; macOS Cmd+1…8.</td></tr>
+<tr><th scope="row"><kbd>Ctrl+Shift+9</kbd></th><td>Last outer tab; macOS Cmd+9.</td></tr>
+</table><p class="note" style="margin-top:10px">The tab bar displays zero-based indices. The prefix number commands below use those indices; direct numeric shortcuts retain the first-eight/last-tab convention. Direct number/font chords use physical number-row and +/- positions to handle Shift correctly. These are not Zellij tabs.</p>
+</div></section>
+<section class="card wide" style="--accent:var(--mauve)" aria-labelledby="prefix"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="prefix">WEZ only — one-shot command prefix</h2></div><div class="body">
+<p>Press <kbd>Ctrl+Shift+Space</kbd>, release, then one key below. The badge shows <strong>WEZ · CMD</strong>. One action or a two-second timeout returns to WEZ.</p><table class="scope-table" aria-label="WEZ prefix command keys">
+<tr><th scope="row"><kbd>c</kbd></th><td>New outer tab in CurrentPaneDomain.</td></tr>
+<tr><th scope="row"><kbd>x</kbd></th><td>Close outer pane, requesting confirmation.</td></tr>
+<tr><th scope="row"><kbd>b</kbd> / <kbd>n</kbd></th><td>Previous / next outer tab.</td></tr>
+<tr><th scope="row"><kbd>0…9</kbd></th><td>Activate zero-based outer tab index.</td></tr>
+<tr><th scope="row"><kbd>Shift+|</kbd> / <kbd>-</kbd></th><td>Split side by side / above and below.</td></tr>
+<tr><th scope="row"><kbd>h</kbd> / <kbd>j</kbd> / <kbd>k</kbd> / <kbd>l</kbd></th><td>Focus left / down / up / right.</td></tr>
+<tr><th scope="row"><kbd>←</kbd> / <kbd>↓</kbd> / <kbd>↑</kbd> / <kbd>→</kbd></th><td>Resize focused outer pane by five cells.</td></tr>
+<tr><th scope="row"><kbd>f</kbd> / <kbd>z</kbd></th><td>Pane picker / zoom toggle.</td></tr>
+<tr><th scope="row"><kbd>p</kbd> / <kbd>w</kbd></th><td>Launcher (profiles/tabs/workspaces) / outer workspace selector.</td></tr>
+<tr><th scope="row"><kbd>s</kbd> / <kbd>[</kbd></th><td>Outer search / copy mode.</td></tr>
+<tr><th scope="row"><kbd>r</kbd> / <kbd>Shift+?</kbd></th><td>Reload / command palette.</td></tr>
+</table><p class="note" style="margin-top:10px">This prefix is not bound in APP. An unknown key cancels the prefix and follows WEZ routing. Escape cancels it and sends one Escape onward. F12 also passes through a pending prefix.</p>
+</div></section>
+<section class="card " style="--accent:var(--sky)" aria-labelledby="scrolling"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="scrolling">Scroll the correct layer</h2></div><div class="body">
+<table class="scope-table" aria-label="Scrolling by layer">
+<tr><th scope="row">Zellij Normal</th><td><kbd>Ctrl+s</kbd> enters Scroll mode; unlock with F12 first when Locked.</td></tr>
+<tr><th scope="row">Zellij Scroll</th><td><kbd>Ctrl+b</kbd> / <kbd>Ctrl+f</kbd> or PageUp/PageDown: pages. <kbd>u</kbd> / <kbd>d</kbd>: half-pages.</td></tr>
+<tr><th scope="row">Zellij Scroll</th><td><kbd>Ctrl+c</kbd>: bottom and Normal; Escape/Enter: Normal.</td></tr>
+<tr><th scope="row">WEZ only</th><td><kbd>Shift+PageUp</kbd> / <kbd>Shift+PageDown</kbd>: outer history. Mac compact: Shift+Fn+↑ / ↓.</td></tr>
+<tr><th scope="row">WezTerm copy mode</th><td><kbd>Ctrl+b</kbd> / <kbd>Ctrl+f</kbd>: pages; <kbd>Ctrl+u</kbd> / <kbd>Ctrl+d</kbd>: half-pages; <kbd>g</kbd> / <kbd>Shift+g</kbd>: oldest/newest retained output.</td></tr>
+</table><p class="note" style="margin-top:10px">Zellij owns each inner pane’s history. The right-edge WezTerm bar represents the active outer pane. Full-screen editors have their own navigation. See the <a href="wezterm-workflows.html#workflow-scroll">scroll workflow</a>.</p>
+</div></section>
+<section class="card " style="--accent:var(--yellow)" aria-labelledby="copy-mode"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="copy-mode">WezTerm copy/search UI</h2></div><div class="body">
+<table class="scope-table" aria-label="Outer copy and search UI keys">
+<tr><th scope="row">Enter copy mode</th><td>In WEZ: Ctrl+Shift+Space, then <kbd>[</kbd>.</td></tr>
+<tr><th scope="row"><kbd>h</kbd> / <kbd>j</kbd> / <kbd>k</kbd> / <kbd>l</kbd></th><td>Move the selection cursor; arrows also work.</td></tr>
+<tr><th scope="row"><kbd>v</kbd> / <kbd>Shift+v</kbd></th><td>Character / line selection; Ctrl+v selects a block.</td></tr>
+<tr><th scope="row"><kbd>y</kbd> / <kbd>q</kbd></th><td>Copy and close / close without copying.</td></tr>
+<tr><th scope="row">Search matches</th><td><kbd>Ctrl+n</kbd> / <kbd>Ctrl+p</kbd>: next/previous; Ctrl+r: matching mode.</td></tr>
+<tr><th scope="row">Return to APP</th><td><kbd>Ctrl+Shift+F12</kbd> closes this copy/search UI and clears outer command tables.</td></tr>
+</table><p class="note" style="margin-top:10px">For Neovim or an inner Zellij pane, prefer that layer’s selection/copy operation. Outer copy mode selects the rendered terminal, not an editor’s buffer.</p>
+</div></section>
+<section class="card " style="--accent:var(--peach)" aria-labelledby="zellij-keys"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="zellij-keys">Zellij and Neovim keep their own keys</h2></div><div class="body">
+<table class="scope-table" aria-label="Inner application routing">
+<tr><th scope="row"><kbd>F12</kbd></th><td>Zellij Normal ↔ Locked in the companion config.</td></tr>
+<tr><th scope="row">Zellij Normal</th><td><kbd>Ctrl+p</kbd>: Pane; <kbd>Ctrl+t</kbd>: Tab; <kbd>Ctrl+s</kbd>: Scroll.</td></tr>
+<tr><th scope="row">Zellij Locked</th><td>Ordinary application shortcuts reach Neovim; F12 unlocks Zellij.</td></tr>
+<tr><th scope="row">Neovim editing</th><td><kbd>Esc</kbd> leaves insert mode normally; no double Escape.</td></tr>
+</table><p class="note" style="margin-top:10px">These Zellij entries reflect the companion config and retained v0.45.1 defaults. This repository does not configure those applications. Read the <a href="../docs/INPUT.md">full input-routing guide</a> for OS/encoding boundaries and clipboard setup.</p>
+</div></section>
+<section class="card full" style="--accent:var(--red)" aria-labelledby="closing"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="closing">Close the intended layer</h2></div><div class="body">
+<table class="scope-table" aria-label="Close actions by layer">
+<tr><th scope="row">Neovim</th><td>Use its save/quit commands, such as <code>:wq</code> or <code>:q</code>.</td></tr>
+<tr><th scope="row">Inner Zellij pane</th><td>Zellij Normal: <kbd>Ctrl+p</kbd>, then <kbd>x</kbd>.</td></tr>
+<tr><th scope="row">Inner Zellij tab</th><td>Zellij Normal: <kbd>Ctrl+t</kbd>, then <kbd>x</kbd>.</td></tr>
+<tr><th scope="row">Detach Zellij</th><td>Zellij Normal: <kbd>Ctrl+o</kbd>, then <kbd>d</kbd>.</td></tr>
+<tr><th scope="row">Outer WezTerm pane</th><td>WEZ: <kbd>Ctrl+Shift+Space</kbd>, then <kbd>x</kbd>.</td></tr>
+<tr><th scope="row">Outer WezTerm tab</th><td>WEZ: <kbd>Ctrl+Shift+W</kbd>; macOS <kbd>Cmd+W</kbd>.</td></tr>
+<tr><th scope="row">Native window</th><td>OS close button; Alt+F4 on Windows. This affects all outer tabs.</td></tr>
+</table><p class="note" style="margin-top:10px">Outer closes affect the entire Zellij client hosted there, not one inner pane. Save work and detach explicitly when preserving the Zellij session is intended. Safe/idle outer processes may skip confirmation. See <a href="wezterm-architecture.html#lifetime">lifetime</a>.</p>
+</div></section>
+</main>
+<footer><span>WezTerm 20240203-110809-5046fc22+ · local overrides may change bindings.</span><span><a href="../docs/INPUT.md">Input-routing guide</a> · <a href="../docs/SETUP.md">OS setup</a> · <a href="../README.md">Repository guide</a></span></footer>
+</div></body></html>

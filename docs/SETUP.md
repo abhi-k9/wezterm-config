@@ -138,7 +138,7 @@ fi && cp "$HOME/wezterm-config/.wezterm.lua" "$HOME/.wezterm.lua"
 ```
 
 The active files use the same home-directory layout as Linux. WezTerm uses your
-platform default shell, and native Cmd shortcuts remain available. If the
+platform default shell; its Cmd shortcuts are available in WEZ mode. If the
 application opens but `wezterm` is unavailable in Terminal, see
 [executable locations](#wezterm-command-not-found).
 
@@ -181,13 +181,14 @@ if [ ! -e "$HOME/wezterm.local.lua" ]; then
 fi
 ```
 
-The example contains optional font/theme/shell overrides, an alternative leader,
+The example contains optional font/theme/shell overrides, routing-key customization,
 and a generic platform/file-existence check for a machine-only launch entry.
 It does not enable a work profile by itself. The private file runs after shared
 settings and can append to `config.launch_menu`.
 
-After creating it for the first time, reload manually with `Ctrl+Shift+r`, or
-`Cmd+r` on macOS. Existing local files are watched for subsequent edits. Read,
+After creating it for the first time, toggle WEZ with `Ctrl+Shift+F12`, then
+reload with `Ctrl+Shift+r` or `Cmd+r` on macOS. The badge returns APP.
+Existing local files are watched for subsequent edits. Read,
 syntax, return-type, and runtime errors surface rather than being silently ignored.
 
 With this layout, the active private file is outside the checkout. If you run the
@@ -221,10 +222,17 @@ Also open WezTerm normally from your desktop/app launcher to confirm it finds th
 same home-directory config. Configuration tools may fall back to defaults after
 an error, so inspect diagnostics as well as the command's exit status.
 
-Expect Catppuccin Macchiato and a bottom tab bar. Press **Escape**, release it,
-then **c** to open a tab, or **p** to open the launcher. A private menu entry appears
-only if your local file adds it. A single Escape acts as the leader; double Escape
-sends one Escape to an application. Keep these separate references handy:
+Expect Catppuccin Macchiato, a bottom tab bar, and an **APP** badge. In APP only
+Alt+Enter (fullscreen) and Ctrl+Shift+F12 (mode toggle) are reserved by this config.
+Plain F12 reaches Zellij; ordinary Escape reaches the application immediately.
+
+Toggle **WEZ** with Ctrl+Shift+F12. Press Ctrl+Shift+Space, release, then `p` for
+the outer launcher or `c` for an outer tab. Return APP with the same mode toggle.
+A private launch entry appears only if the local file adds it. The Zellij lock
+behavior assumes its own config binds F12; this repo does not configure Zellij
+or Neovim. See [input routing](INPUT.md) for the full contract and verification.
+
+Keep these separate references handy:
 
 - [Keymap](../cheatsheets/wezterm-keymap.html): shortcuts, including the
   [pane/tab/window close actions](../cheatsheets/wezterm-keymap.html#closing).
@@ -253,6 +261,18 @@ The recommended home-directory layout needs no migration: its private file is
 already outside this repository. You do not need to copy the new public example
 over a working private profile.
 
+### Upgrading input routing
+
+The Escape leader has been replaced by APP/WEZ modes. Preserve private profiles,
+but remove any enabled legacy `config.leader` or
+`config.disable_default_key_bindings = false` override from the installed local
+file. The shared config rejects those overrides to preserve APP routing. Move
+custom outer shortcuts into `config.key_tables.wezterm`.
+
+For the first reload, use the shortcut in your currently loaded configuration
+(the old map uses Ctrl+Shift+R/Cmd+R). After upgrading, enter WEZ before reloading.
+Reload clears input modes back to APP. See [the migration checklist](INPUT.md#upgrade-from-the-escape-leader-configuration).
+
 ### Routine updates
 
 The home-directory file is a copy: `git pull` alone does not update the active
@@ -278,8 +298,8 @@ git -C "$HOME/wezterm-config" pull --ff-only &&
     cp "$HOME/wezterm-config/.wezterm.lua" "$HOME/.wezterm.lua"
 ```
 
-Reload with `Ctrl+Shift+r` or `Cmd+r` on macOS, then repeat the installed-config
-check. These commands replace only `.wezterm.lua`; they leave your private
+Toggle WEZ with `Ctrl+Shift+F12`, reload with `Ctrl+Shift+r` or `Cmd+r` on
+macOS, then repeat the installed-config check. A reload returns APP. These commands replace only `.wezterm.lua`; they leave your private
 `wezterm.local.lua` in place. If a fast-forward pull fails, resolve the local Git
 changes before copying anything.
 
@@ -315,7 +335,7 @@ your installed package's executable or the downloaded AppImage's actual path.
    config files and launch arguments. WezTerm also searches locations such as
    `$XDG_CONFIG_HOME/wezterm/wezterm.lua` and `~/.config/wezterm/wezterm.lua` on
    Unix. See the official [search order](https://wezterm.org/config/files.html).
-5. In the debug overlay (`Ctrl+Shift+l`), inspect
+5. Toggle WEZ and open the debug overlay (`Ctrl+Shift+l`), then inspect
    `wezterm.config_file` and `wezterm.config_dir` to find the loaded file and the
    directory used for `wezterm.local.lua`. This is also useful with symlinks.
 6. Reload after creating a new local file, and check errors or the file's platform
@@ -335,3 +355,17 @@ Window transparency, blur, and decorations depend on the OS/compositor; use
 `window_background_opacity = 1.0` locally if needed. Starting a GUI requires a
 graphical session; `show-keys` can still inspect configuration without opening
 a window.
+
+### A key is consumed or the badge is unexpected
+
+Check the APP/WEZ badge and Zellij's Normal/Locked indicator independently. In
+APP only the two global shortcuts are reserved. WEZ enables its explicit control
+map; its command prefix is Ctrl+Shift+Space, not Escape. A mode change covers all
+outer tabs/panes in that GUI window. On compact Mac keyboards, F12 may need Fn.
+
+Remove old leader/default-key overrides and inspect any custom global
+`config.keys` entries in the local file. WEZ-only additions belong in
+`config.key_tables.wezterm`. If an OS shortcut intercepts the toggle before it
+reaches WezTerm, change that OS shortcut or the local toggle chord using the
+public example. A reload resets to APP. See [input routing](INPUT.md) for the
+full layer model, copy/search UI behavior, and manual verification checklist.

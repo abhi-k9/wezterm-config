@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark light">
-  <meta name="description" content="Choose a reference · keymap, workflows, or architecture">
-  <title>WezTerm — Cheatsheets</title>
-  <style>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="description" content="Choose a reference · APP/WEZ input routing and nested terminal work">
+<title>WezTerm — Cheatsheets</title><style>
     :root {
       /* Catppuccin Macchiato; overlay2 keeps small notes readable on dark surfaces. */
       --bg:#24273a;--surface:#1e2030;--overlay:#363a4f;--muted:#a5adcb;
@@ -103,33 +99,25 @@
     figcaption{margin-top:9px;color:var(--muted);font-size:12px}
     .intro{margin:0 0 18px;color:var(--subtext);max-width:100ch}
     @media print{nav{display:none}.intro{font-size:10px;margin-bottom:10px}figcaption{font-size:9px}}
-  </style>
-</head>
-<body>
-<div class="sheet">
-  <header>
-    <div><h1>WezTerm — Cheatsheets</h1><p class="subtitle">Choose a reference · keymap, workflows, or architecture</p></div>
-    <div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>Shared config targets WezTerm 20240203-110809-5046fc22 or newer.</p></div>
-  </header>
-  <nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html" aria-current="page">Overview</a> <a href="wezterm-keymap.html">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav>
-  <p class="intro">The documentation is split into three focused sheets. This overview preserves the original cheatsheet URL.</p>
-  <main class="grid"><section class="card " style="--accent:var(--blue)" aria-labelledby="choose-keymap">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="choose-keymap">Keymap</h2></div>
-  <div class="body"><p>Find the shortcut for an action, including pane/tab/window closing, splits, navigation, search, and copy mode.</p><p><a href="wezterm-keymap.html">Open the keymap cheatsheet →</a></p></div>
-</section>
-<section class="card " style="--accent:var(--green)" aria-labelledby="choose-workflows">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="choose-workflows">Workflows</h2></div>
-  <div class="body"><p>Follow task recipes: finish work, arrange an editor and shell, copy output, separate projects, or use a private launch profile.</p><p><a href="wezterm-workflows.html">Open the workflows cheatsheet →</a></p></div>
-</section>
-<section class="card " style="--accent:var(--mauve)" aria-labelledby="choose-architecture">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="choose-architecture">Architecture</h2></div>
-  <div class="body"><p>Understand panes, tabs, windows, workspaces, domains, profiles, and the scope of closing or reloading.</p><p><a href="wezterm-architecture.html">Open the architecture cheatsheet →</a></p></div>
-</section>
-<section class="card full" style="--accent:var(--peach)" aria-labelledby="setup">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="setup">Install and customize</h2></div>
-  <div class="body"><p>The <a href="../docs/SETUP.md">setup guide</a> covers Windows, Linux, and macOS installation, safe updates, and optional private profiles. Settings are commented in <a href="../.wezterm.lua">.wezterm.lua</a>; the versioned <a href="../wezterm.local.lua">local example</a> has all overrides disabled.</p><p class="note">Each cheatsheet is a self-contained HTML file with inline styling. Download the companion sheets together to keep the local navigation links working. No network access is required to read or print a sheet.</p></div>
-</section></main>
-  <footer><span>Private home-directory overrides may change the shared settings.</span><span>Each sheet has its own focus; companion links open the other sheets.</span><span><a href="../docs/SETUP.md">Setup guide</a> · <a href="../README.md">Repository guide</a> · <a href="https://wezterm.org/config/keys.html">Official key reference</a></span></footer>
-</div>
-</body>
-</html>
+
+.card:not(.full):not(.wide) .scope-table th{width:46%}
+</style>
+</head><body><div class="sheet">
+<header><div><h1>WezTerm — Cheatsheets</h1><p class="subtitle">Choose a reference · APP/WEZ input routing and nested terminal work</p></div><div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>APP by default · WEZ controls on demand</p></div></header>
+<nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html" aria-current="page">Overview</a> <a href="wezterm-keymap.html">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav><p class="intro">The original cheatsheet URL remains an overview. Daily typing starts APP; Ctrl+Shift+F12 enables outer WEZ controls when needed.</p>
+<main class="grid">
+<section class="card " style="--accent:var(--blue)" aria-labelledby="keymap"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="keymap">Keymap</h2></div><div class="body">
+<p>Look up the two always-on keys, WEZ-only controls, prefix commands, and inner/outer close and scroll actions.</p><p><a href="wezterm-keymap.html">Open keymap →</a></p>
+</div></section>
+<section class="card " style="--accent:var(--green)" aria-labelledby="workflows"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflows">Workflows</h2></div><div class="body">
+<p>Follow recipes for Zellij/Neovim editing, clipboard, scrolling, project grouping, private launch profiles, and safe upgrades.</p><p><a href="wezterm-workflows.html">Open workflows →</a></p>
+</div></section>
+<section class="card " style="--accent:var(--mauve)" aria-labelledby="architecture"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="architecture">Architecture</h2></div><div class="body">
+<p>Understand OS → WezTerm → Zellij → Neovim routing, terminal nesting, independent modes, and process lifetime.</p><p><a href="wezterm-architecture.html">Open architecture →</a></p>
+</div></section>
+<section class="card full" style="--accent:var(--peach)" aria-labelledby="setup"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="setup">Install, migrate, and verify</h2></div><div class="body">
+<p><a href="../docs/SETUP.md">OS setup</a> has installation/update commands. <a href="../docs/INPUT.md">Input routing</a> documents the complete mode contract, migration from Escape leader, and a cross-platform checklist.</p><p class="note">Every sheet is standalone HTML with inline styling, works offline, and has a print layout. Keep companion files together for local navigation. Private profile contents are not included.</p>
+</div></section>
+</main>
+<footer><span>WezTerm 20240203-110809-5046fc22+ · local overrides may change bindings.</span><span><a href="../docs/INPUT.md">Input-routing guide</a> · <a href="../docs/SETUP.md">OS setup</a> · <a href="../README.md">Repository guide</a></span></footer>
+</div></body></html>

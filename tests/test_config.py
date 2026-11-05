@@ -44,34 +44,60 @@ if not ok then
   result = { error = tostring(config) }
 else
   local callback = assert(callbacks['update-status'], 'missing status callback')
-  local status
+  local status, active_table
   local palette = { tab_bar = { active_tab = {
     fg_color = '#181926', bg_color = '#c6a0f6',
   } } }
   local window = {
-    leader_is_active = function() return true end,
+    active_key_table = function() return active_table end,
     effective_config = function()
       return { resolved_palette = palette }
     end,
     set_left_status = function(_, value) status = value end,
   }
   callback(window)
-  assert(status and status:find('LEADER'), 'leader badge missing')
+  assert(status and status:find('APP'), 'APP badge missing on a fresh window')
+  active_table = 'wezterm'
+  callback(window)
+  assert(status:find('WEZ'), 'WEZ badge missing')
   assert(status:find('198:160:246', 1, true), 'effective palette not used')
+  active_table = 'wezterm_commands'
+  callback(window)
+  assert(status:find('CMD'), 'pending command badge missing')
+  for _, name in ipairs { 'copy_mode', 'search_mode' } do
+    active_table = name
+    callback(window)
+    assert(status:find('WEZ') and not status:find('APP'), 'WezTerm UI must not show APP')
+  end
   palette = { foreground = '#f5a97f', background = '#24273a' }
   callback(window)
   assert(status:find('245:169:127', 1, true), 'theme without tab colors must use terminal palette')
-  window.leader_is_active = function() return false end
+  active_table = nil
   callback(window)
-  assert(status == '', 'inactive leader status must clear')
+  assert(status:find('APP') and not status:find('WEZ'), 'APP badge must replace WEZ')
+  local actions = {}
+  window.perform_action = function(_, action) actions[#actions + 1] = action end
+  local toggle = assert(callbacks['toggle-input-mode'])
+  toggle(window, {})
+  active_table = 'wezterm'
+  toggle(window, {})
+  active_table = 'wezterm_commands'
+  toggle(window, {})
+  -- A second window has independent table state and enters WEZ, rather than
+  -- inheriting the first window's input mode through a global flag.
+  toggle({active_key_table=function() return nil end,
+          perform_action=window.perform_action}, {})
   result = {
     font_size = config.font_size,
     default_prog = config.default_prog or false,
     launch_menu = config.launch_menu,
     mac_blur = config.macos_window_background_blur or false,
     watched = watched,
-    leader = config.leader,
+    leader = config.leader or false,
+    defaults_disabled = config.disable_default_key_bindings,
     keys = config.keys,
+    key_tables = config.key_tables,
+    toggle_actions = actions,
   }
 end
 local output = assert(io.open(RESULT, 'w'))
@@ -145,19 +171,23 @@ return ok and config or w.config_builder()
                 self.assertIs(result['default_prog'], False)
                 self.assertEqual(len(result['launch_menu']), 2 if 'windows' in triple else 0)
 
-    def test_modifier_leader_example_updates_forwarding_binding(self):
+    def test_local_toggle_customization_keeps_one_global_event(self):
         result = self.probe(local='''return function(config, wezterm)
-          config.leader = {key='a', mods='CTRL', timeout_milliseconds=1000}
-          config.keys[1] = {
-            key='a', mods='LEADER|CTRL',
-            action=wezterm.action.SendKey {key='a', mods='CTRL'},
-          }
+          config.keys[2].key = 'F11'
+          config.keys[2].mods = 'CTRL|ALT'
         end''')
-        self.assertEqual(result['leader']['key'], 'a')
-        first = result['keys'][0]
-        self.assertEqual(first['key'], 'a')
-        self.assertIn('CTRL', first['mods'])
-        self.assertEqual(first['action']['SendKey']['mods'], 'CTRL')
+        toggle = result['keys'][1]
+        self.assertEqual(toggle['key'], 'F11')
+        self.assertEqual(toggle['action']['EmitEvent'], 'toggle-input-mode')
+        self.assertEqual(len(result['keys']), 2)
+
+    def test_legacy_overrides_cannot_silently_break_app_mode(self):
+        self.probe(local='''return function(config)
+          config.leader = {key='Escape', mods='NONE'}
+        end''', expected_error='Remove config.leader')
+        self.probe(local='''return function(config)
+          config.disable_default_key_bindings = false
+        end''', expected_error='APP routing requires')
 
     def test_local_errors_are_visible(self):
         for local, expected in [
@@ -169,10 +199,46 @@ return ok and config or w.config_builder()
                 self.probe(local=local, expected_error=expected)
         self.probe(read_failure=True, expected_error='permission denied')
 
-    def test_key_workflows(self):
+    def test_app_mode_reserves_only_toggle_and_fullscreen(self):
+        for triple in ['x86_64-unknown-linux-gnu', 'aarch64-apple-darwin',
+                       'x86_64-pc-windows-msvc']:
+            with self.subTest(triple=triple):
+                result = self.probe(triple=triple)
+                self.assertTrue(result['defaults_disabled'])
+                self.assertIs(result['leader'], False)
+                self.assertEqual(len(result['keys']), 2)
+                self.assertEqual(result['keys'][0], {
+                    'key': 'Enter', 'mods': 'ALT', 'action': 'ToggleFullScreen'})
+                self.assertEqual(result['keys'][1]['key'], 'F12')
+                self.assertEqual(set(result['keys'][1]['mods'].split('|')), {'CTRL', 'SHIFT'})
+                self.assertEqual(result['keys'][1]['action']['EmitEvent'], 'toggle-input-mode')
+
+    def test_toggle_is_persistent_and_exits_overlays_on_return(self):
+        actions = self.probe()['toggle_actions']
+        enter = actions[0]['ActivateKeyTable']
+        self.assertEqual(enter['name'], 'wezterm')
+        self.assertFalse(enter['one_shot'])
+        self.assertFalse(enter['until_unknown'])
+        self.assertFalse(enter['prevent_fallback'])
+        self.assertEqual(actions[1]['Multiple'], [{'CopyMode': 'Close'}, 'ClearKeyTableStack'])
+        self.assertEqual(actions[2], actions[1])
+        self.assertEqual(actions[3], actions[0])
+
+    def test_wez_command_workflows_preserve_application_escape_and_f12(self):
         result = self.probe()
-        keys = {entry['key']: entry for entry in result['keys'] if 'LEADER' in entry['mods']}
-        self.assertEqual(result['leader']['key'], 'Escape')
+        tables = result['key_tables']
+        wez = {entry['key']: entry for entry in tables['wezterm']}
+        self.assertNotIn('Escape', wez)
+        self.assertNotIn('F12', wez)
+        prefix = wez[' ']['action']['ActivateKeyTable']
+        self.assertEqual(prefix['name'], 'wezterm_commands')
+        self.assertTrue(prefix['one_shot'])
+        # Modifier key transitions must not cancel shifted commands like |/?.
+        self.assertFalse(prefix['until_unknown'])
+        self.assertFalse(prefix['prevent_fallback'])
+        self.assertEqual(prefix['timeout_milliseconds'], 2000)
+        keys = {entry['key']: entry for entry in tables['wezterm_commands']}
+        self.assertNotIn('F12', keys)
         self.assertEqual(keys['Escape']['action']['SendKey']['key'], 'Escape')
         self.assertTrue(keys['x']['action']['CloseCurrentPane']['confirm'])
         for direction in ['Left', 'Right', 'Up', 'Down']:
@@ -182,6 +248,14 @@ return ok and config or w.config_builder()
         self.assertEqual(keys['c']['action']['SpawnTab'], 'CurrentPaneDomain')
         self.assertIn('WORKSPACES', keys['w']['action']['ShowLauncherArgs']['flags'])
         self.assertEqual(keys['[']['action'], 'ActivateCopyMode')
+
+    def test_mac_shortcuts_are_wez_only_and_close_outer_tabs(self):
+        result = self.probe(triple='aarch64-apple-darwin')
+        cmd = {entry['key']: entry for entry in result['key_tables']['wezterm']
+               if entry['mods'] == 'SUPER'}
+        self.assertTrue(cmd['w']['action']['CloseCurrentTab']['confirm'])
+        self.assertEqual(cmd['c']['action']['CopyTo'], 'Clipboard')
+        self.assertFalse(any(entry['mods'] == 'SUPER' for entry in result['keys']))
 
 
 if __name__ == '__main__':

@@ -25,7 +25,7 @@ config.cell_width = 1.0 -- Multiplier: change carefully; wide cells affect align
 
 -- Colors and rendering -----------------------------------------------------
 -- Built-in theme; try 'Catppuccin Mocha', 'Catppuccin Latte', or another name
--- from https://wezterm.org/colorschemes/index.html. The leader badge below
+-- from https://wezterm.org/colorschemes/index.html. The mode badge below
 -- reads the selected scheme's tab colors instead of maintaining a second palette.
 config.color_scheme = 'Catppuccin Macchiato'
 config.window_background_opacity = 0.95 -- 0 = transparent, 1 = opaque.
@@ -77,13 +77,13 @@ config.hide_mouse_cursor_when_typing = true
 config.enable_tab_bar = true
 config.hide_tab_bar_if_only_one_tab = false
 config.tab_bar_at_bottom = true
-config.use_fancy_tab_bar = false -- Retro/cell-based bar; enables our left badge.
+config.use_fancy_tab_bar = false -- Retro bar; keep visible for the APP/WEZ badge.
 config.show_new_tab_button_in_tab_bar = true
 config.tab_max_width = 24 -- Maximum title width in cells for the retro tab bar.
 config.tab_and_split_indices_are_zero_based = true -- First tab displays as 0.
--- Leader+0 selects the first tab, Leader+1 the second, etc. Built-in tab
--- shortcuts remain available with their usual numbering (e.g. Ctrl+Shift+1
--- selects the first tab). Change the bindings below if you prefer one system.
+-- In WEZ mode, Ctrl+Shift+Space then 0 selects the first outer tab, 1 the
+-- second, etc. Direct Ctrl+Shift+1..8 selects the first eight tabs; 9 the last.
+-- These commands address WezTerm tabs, not tabs within Zellij.
 
 -- Cursor, scrollback, and bell ----------------------------------------------
 config.default_cursor_style = 'SteadyBlock' -- Also: BlinkingBlock/SteadyBar/BlinkingBar.
@@ -92,8 +92,8 @@ config.cursor_blink_rate = 500 -- Milliseconds; only relevant for blinking style
 config.scrollback_lines = 10000 -- History retained per pane; more uses more RAM.
 -- WezTerm hides the scrollbar by default. Show it at the window's right edge;
 -- it uses the existing right padding and tracks the active pane's scrollback.
--- Set false locally for a keyboard-only/minimal view. Shift+PageUp/PageDown
--- scroll by a page even without the bar; copy mode offers larger history jumps.
+-- Set false locally for a minimal view. In WEZ mode, Shift+PageUp/PageDown
+-- scroll this outer history. Use Zellij scroll mode for inner pane history.
 config.enable_scroll_bar = true
 config.scroll_to_bottom_on_input = true -- Typing returns a scrolled pane to the prompt.
 config.audible_bell = 'Disabled' -- Silence BEL; enable with 'SystemBeep'.
@@ -107,7 +107,9 @@ config.exit_behavior = 'CloseOnCleanExit'
 config.window_close_confirmation = 'AlwaysPrompt'
 -- WezTerm can still skip prompts for processes it considers safe to close,
 -- such as idle shells (skip_close_confirmation_for_processes_named). Closing a pane
--- through Leader+x requests confirmation; this is not a session backup.
+-- via the WEZ command prefix then x requests confirmation. An outer pane
+-- close disconnects the entire Zellij client it hosts; use Zellij to close
+-- an inner pane. Confirmation is not a session backup.
 
 -- Shells and launch menu ---------------------------------------------------
 -- Leave default_prog and default_cwd UNSET. WezTerm chooses its platform
@@ -128,88 +130,156 @@ end
 -- Add machine-specific tools to the installed local copy, outside this checkout.
 -- The launcher also lists tabs and workspaces even when this menu is empty.
 
--- Keyboard -----------------------------------------------------------------
-config.disable_default_key_bindings = false -- Keep native shortcuts (including Cmd on macOS).
+-- Input routing: WezTerm -> Zellij -> Neovim --------------------------------
+-- APP is the default in each window and after a config reload. Only the two
+-- global shortcuts below are reserved. All other keyboard input follows the
+-- normal terminal path to the application (subject to OS/terminal encoding).
+-- Never set a native config.leader: it is checked BEFORE key tables and would
+-- intercept Escape or another prefix even in APP mode.
+config.disable_default_key_bindings = true
+config.status_update_interval = 200 -- Milliseconds; refresh the small mode badge.
 
--- Retained from this layout: Escape is a modal prefix, NOT a normal Escape.
--- Press it, then a binding within 2 seconds. Unbound next keys are swallowed;
--- the timeout does not replay Escape. Press Escape twice to send one Escape
--- to an editor or shell. This can interrupt Vim/readline workflows.
--- Alternative: set key='a', mods='CTRL'; the forwarding binding below adapts.
-config.leader = { key = 'Escape', mods = 'NONE', timeout_milliseconds = 2000 }
-
-local function leader_key(key, action, extra_mods)
-  return { key = key, mods = 'LEADER' .. (extra_mods and '|' .. extra_mods or ''), action = action }
+local function key(key_name, mods, action)
+  return { key = key_name, mods = mods, action = action }
 end
+
+-- A single global event toggles the current GUI window. Named tables fall
+-- through to these globals, so fullscreen and the toggle work in both modes.
+-- Clearing the stack also exits a pending command prefix. CopyMode Close is
+-- harmless outside the copy/search UI and releases that UI when returning APP.
+wezterm.on('toggle-input-mode', function(window, pane)
+  if window:active_key_table() then
+    window:perform_action(act.Multiple {
+      act.CopyMode 'Close',
+      act.ClearKeyTableStack,
+    }, pane)
+  else
+    window:perform_action(act.ActivateKeyTable {
+      name = 'wezterm', one_shot = false, until_unknown = false,
+      prevent_fallback = false,
+    }, pane)
+  end
+end)
 
 config.keys = {
-  -- Double leader forwards the actual configured key and modifiers.
-  -- If a local override changes config.leader, it must update this binding too;
-  -- the local example shows how to do that without leaving a stale Escape bind.
-  leader_key(config.leader.key,
-    act.SendKey { key = config.leader.key, mods = config.leader.mods },
-    config.leader.mods ~= 'NONE' and config.leader.mods or nil),
-  leader_key('c', act.SpawnTab 'CurrentPaneDomain'),
-  leader_key('x', act.CloseCurrentPane { confirm = true }),
-  leader_key('b', act.ActivateTabRelative(-1)),
-  leader_key('n', act.ActivateTabRelative(1)),
-  -- Horizontal splits produce side-by-side panes; vertical splits stack panes.
-  -- The | key normally requires Shift; this modifier matches the official example.
-  leader_key('|', act.SplitHorizontal { domain = 'CurrentPaneDomain' }, 'SHIFT'),
-  leader_key('-', act.SplitVertical { domain = 'CurrentPaneDomain' }),
-  leader_key('h', act.ActivatePaneDirection 'Left'),
-  leader_key('j', act.ActivatePaneDirection 'Down'),
-  leader_key('k', act.ActivatePaneDirection 'Up'),
-  leader_key('l', act.ActivatePaneDirection 'Right'),
-  -- Each resize consumes leader mode; repeat the prefix for another 5 cells.
-  leader_key('LeftArrow', act.AdjustPaneSize { 'Left', 5 }),
-  leader_key('RightArrow', act.AdjustPaneSize { 'Right', 5 }),
-  leader_key('DownArrow', act.AdjustPaneSize { 'Down', 5 }),
-  leader_key('UpArrow', act.AdjustPaneSize { 'Up', 5 }),
-  leader_key('z', act.TogglePaneZoomState),
-  leader_key('f', act.PaneSelect),
-  leader_key('p', act.ShowLauncherArgs { flags = 'LAUNCH_MENU_ITEMS|TABS|WORKSPACES' }),
-  leader_key('w', act.ShowLauncherArgs { flags = 'WORKSPACES' }),
-  leader_key('r', act.ReloadConfiguration),
-  leader_key('s', act.Search 'CurrentSelectionOrEmptyString'),
-  leader_key('[', act.ActivateCopyMode),
-  leader_key('?', act.ActivateCommandPalette, 'SHIFT'),
-
-  -- Explicit portable shortcuts; native defaults remain enabled as well.
-  { key = 'C', mods = 'CTRL|SHIFT', action = act.CopyTo 'Clipboard' },
-  { key = 'V', mods = 'CTRL|SHIFT', action = act.PasteFrom 'Clipboard' },
-  { key = 'F', mods = 'CTRL|SHIFT', action = act.Search 'CurrentSelectionOrEmptyString' },
-  { key = 'P', mods = 'CTRL|SHIFT', action = act.ActivateCommandPalette },
-  { key = 'R', mods = 'CTRL|SHIFT', action = act.ReloadConfiguration },
-  { key = '=', mods = 'CTRL|SHIFT', action = act.IncreaseFontSize },
-  { key = '-', mods = 'CTRL|SHIFT', action = act.DecreaseFontSize },
-  { key = '0', mods = 'CTRL|SHIFT', action = act.ResetFontSize },
+  key('Enter', 'ALT', act.ToggleFullScreen),
+  key('F12', 'CTRL|SHIFT', act.EmitEvent 'toggle-input-mode'),
 }
 
-for index = 0, 9 do
-  table.insert(config.keys, leader_key(tostring(index), act.ActivateTab(index)))
+-- WEZ enables an explicit outer-terminal keymap. Plain F12 is deliberately
+-- absent: it reaches Zellij in both modes. Ordinary Escape is also unbound.
+-- Unmatched keys fall through to the application; WEZ is not a typing lock.
+local wez_keys = {
+  -- A literal space selects the mapped space character. The name 'Space'
+  -- resolves to a physical key in some builds/backends and can miss events.
+  key(' ', 'CTRL|SHIFT', act.ActivateKeyTable {
+    -- one_shot also ends on an unmatched non-modifier. Keep until_unknown
+    -- false so pressing Shift for | or ? does not cancel the command table.
+    name = 'wezterm_commands', one_shot = true, until_unknown = false,
+    timeout_milliseconds = 2000, prevent_fallback = false,
+  }),
+  key('C', 'CTRL|SHIFT', act.CopyTo 'Clipboard'),
+  key('V', 'CTRL|SHIFT', act.PasteFrom 'Clipboard'),
+  key('F', 'CTRL|SHIFT', act.Search 'CurrentSelectionOrEmptyString'),
+  key('P', 'CTRL|SHIFT', act.ActivateCommandPalette),
+  key('R', 'CTRL|SHIFT', act.ReloadConfiguration),
+  key('L', 'CTRL|SHIFT', act.ShowDebugOverlay),
+  -- Physical positions keep Shift+number/symbol chords from becoming !/)/_
+  -- before matching. Labels refer to the usual number row and +/- positions.
+  key('phys:Equal', 'CTRL|SHIFT', act.IncreaseFontSize),
+  key('phys:Minus', 'CTRL|SHIFT', act.DecreaseFontSize),
+  key('phys:0', 'CTRL|SHIFT', act.ResetFontSize),
+  key('T', 'CTRL|SHIFT', act.SpawnTab 'CurrentPaneDomain'),
+  key('N', 'CTRL|SHIFT', act.SpawnWindow),
+  key('W', 'CTRL|SHIFT', act.CloseCurrentTab { confirm = true }),
+  key('Tab', 'CTRL', act.ActivateTabRelative(1)),
+  key('Tab', 'CTRL|SHIFT', act.ActivateTabRelative(-1)),
+  key('PageUp', 'SHIFT', act.ScrollByPage(-1)),
+  key('PageDown', 'SHIFT', act.ScrollByPage(1)),
+}
+for index = 1, 9 do
+  table.insert(wez_keys, key('phys:' .. tostring(index), 'CTRL|SHIFT',
+    act.ActivateTab(index == 9 and -1 or index - 1)))
 end
 
--- Leader indicator ---------------------------------------------------------
--- A small badge in the left of the retro tab bar. Use plain text instead of
--- the wave if your emoji rendering differs between platforms.
-local leader_badge = ' 🌊 LEADER '
-wezterm.on('update-status', function(window)
-  if not window:leader_is_active() then
-    window:set_left_status('')
-    return
+-- macOS Cmd equivalents are explicit WEZ-only bindings. APP does not reserve
+-- Cmd+c/v/etc for WezTerm; OS-owned shortcuts/menu actions remain OS-controlled.
+if is_macos then
+  for _, binding in ipairs {
+    key('c', 'SUPER', act.CopyTo 'Clipboard'),
+    key('v', 'SUPER', act.PasteFrom 'Clipboard'),
+    key('f', 'SUPER', act.Search 'CurrentSelectionOrEmptyString'),
+    key('p', 'SUPER|SHIFT', act.ActivateCommandPalette),
+    key('r', 'SUPER', act.ReloadConfiguration),
+    key('phys:Equal', 'SUPER', act.IncreaseFontSize),
+    key('phys:Equal', 'SUPER|SHIFT', act.IncreaseFontSize),
+    key('phys:Minus', 'SUPER', act.DecreaseFontSize),
+    key('phys:0', 'SUPER', act.ResetFontSize),
+    key('t', 'SUPER', act.SpawnTab 'CurrentPaneDomain'),
+    key('n', 'SUPER', act.SpawnWindow),
+    key('w', 'SUPER', act.CloseCurrentTab { confirm = true }),
+  } do
+    table.insert(wez_keys, binding)
   end
-  -- Read the effective palette so theme changes and local color overrides are
-  -- reflected after reload. No private process titles/paths are shown here.
+  for index = 1, 9 do
+    table.insert(wez_keys, key('phys:' .. tostring(index), 'SUPER',
+      act.ActivateTab(index == 9 and -1 or index - 1)))
+  end
+end
+
+-- A one-shot command prefix exists only in WEZ mode. It returns to WEZ after
+-- one action or 2 seconds. An unknown key cancels the prefix and follows the
+-- normal WEZ routing. Escape cancels it AND sends one literal Escape onward.
+-- There is no automatic switch based on a process name or Zellij's lock state.
+local commands = {
+  key('Escape', 'NONE', act.SendKey { key = 'Escape', mods = 'NONE' }),
+  key('c', 'NONE', act.SpawnTab 'CurrentPaneDomain'),
+  key('x', 'NONE', act.CloseCurrentPane { confirm = true }),
+  key('b', 'NONE', act.ActivateTabRelative(-1)),
+  key('n', 'NONE', act.ActivateTabRelative(1)),
+  key('|', 'SHIFT', act.SplitHorizontal { domain = 'CurrentPaneDomain' }),
+  key('-', 'NONE', act.SplitVertical { domain = 'CurrentPaneDomain' }),
+  key('h', 'NONE', act.ActivatePaneDirection 'Left'),
+  key('j', 'NONE', act.ActivatePaneDirection 'Down'),
+  key('k', 'NONE', act.ActivatePaneDirection 'Up'),
+  key('l', 'NONE', act.ActivatePaneDirection 'Right'),
+  key('LeftArrow', 'NONE', act.AdjustPaneSize { 'Left', 5 }),
+  key('RightArrow', 'NONE', act.AdjustPaneSize { 'Right', 5 }),
+  key('DownArrow', 'NONE', act.AdjustPaneSize { 'Down', 5 }),
+  key('UpArrow', 'NONE', act.AdjustPaneSize { 'Up', 5 }),
+  key('z', 'NONE', act.TogglePaneZoomState),
+  key('f', 'NONE', act.PaneSelect),
+  key('p', 'NONE', act.ShowLauncherArgs { flags = 'LAUNCH_MENU_ITEMS|TABS|WORKSPACES' }),
+  key('w', 'NONE', act.ShowLauncherArgs { flags = 'WORKSPACES' }),
+  key('r', 'NONE', act.ReloadConfiguration),
+  key('s', 'NONE', act.Search 'CurrentSelectionOrEmptyString'),
+  key('[', 'NONE', act.ActivateCopyMode),
+  key('?', 'SHIFT', act.ActivateCommandPalette),
+}
+for index = 0, 9 do
+  table.insert(commands, key(tostring(index), 'NONE', act.ActivateTab(index)))
+end
+config.key_tables = { wezterm = wez_keys, wezterm_commands = commands }
+
+-- Visible per-window input state. Keep the retro tab bar visible to see it.
+-- WezTerm's own copy/search/picker UIs can temporarily handle their UI keys;
+-- the mode toggle exits copy/search as well as the command stack.
+wezterm.on('update-status', function(window)
+  local name = window:active_key_table()
+  -- active_key_table also reports copy_mode/search_mode while their UI owns
+  -- input. Keep the badge WEZ there, instead of misleadingly showing APP.
+  local is_wez = name ~= nil
+  local badge = is_wez and ' WEZ ' or ' APP '
+  if name == 'wezterm_commands' then badge = ' WEZ · CMD ' end
   local palette = window:effective_config().resolved_palette
-  -- Some built-in/custom themes have no tab_bar section. In that case use an
-  -- inverted foreground/background from the effective terminal palette.
-  local active_tab = (palette.tab_bar or {}).active_tab or {}
+  local tab = (palette.tab_bar or {}).active_tab or {}
   window:set_left_status(wezterm.format {
-    { Background = { Color = active_tab.bg_color or palette.foreground or '#cad3f5' } },
-    { Foreground = { Color = active_tab.fg_color or palette.background or '#24273a' } },
+    { Background = { Color = is_wez and (tab.bg_color or palette.foreground or '#cad3f5')
+      or (palette.background or '#24273a') } },
+    { Foreground = { Color = is_wez and (tab.fg_color or palette.background or '#24273a')
+      or (palette.foreground or '#cad3f5') } },
     { Attribute = { Intensity = 'Bold' } },
-    { Text = leader_badge },
+    { Text = badge },
   })
 end)
 
@@ -220,8 +290,9 @@ end)
 -- can use their own private copy or omit it entirely.
 -- Absence is fine; unreadable files, syntax errors, and runtime errors are not
 -- silently ignored. The local file must return function(config, wezterm).
--- After creating the local file for the first time, manually reload with
--- Ctrl+Shift+r (or Cmd+r on macOS); an absent file may not be watchable yet.
+-- After creating the local file for the first time, enter WEZ with
+-- Ctrl+Shift+F12, then reload with Ctrl+Shift+r (Cmd+r on macOS). A new
+-- local file may not be watchable until this first manual reload.
 local local_path = wezterm.config_dir .. '/wezterm.local.lua'
 wezterm.add_to_config_reload_watch_list(local_path)
 local local_file, read_error, read_code = io.open(local_path, 'r')
@@ -235,5 +306,11 @@ if local_file then
 elseif read_code ~= 2 then
   error('Cannot read wezterm.local.lua: ' .. tostring(read_error))
 end
+
+-- Catch legacy local-template overrides that would silently defeat APP mode.
+assert(config.leader == nil,
+  'Remove config.leader from wezterm.local.lua; use the WEZ command key table instead')
+assert(config.disable_default_key_bindings == true,
+  'APP routing requires disable_default_key_bindings = true; add keys to the WEZ table')
 
 return config

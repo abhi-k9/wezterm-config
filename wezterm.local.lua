@@ -17,14 +17,22 @@ return function(config, wezterm)
   -- config.window_background_opacity = 1.0
   -- config.color_scheme = 'Catppuccin Mocha'
 
-  -- Optional alternative leader: Ctrl+a. This replaces BOTH the leader and its
-  -- double-press forwarding shortcut, so ordinary Escape reaches applications.
-  -- The main config's first key entry is the forwarding binding.
-  -- config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
-  -- config.keys[1] = {
-  --   key = 'a', mods = 'LEADER|CTRL',
-  --   action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' },
-  -- }
+  -- Input routing ----------------------------------------------------------
+  -- APP reserves only fullscreen and the mode toggle. Add any extra outer
+  -- shortcut to config.key_tables.wezterm (WEZ-only), not config.keys (global).
+  -- Do not reintroduce config.leader or enable default bindings: either would
+  -- intercept application keys in APP mode, and the shared config rejects it.
+  -- table.insert(config.key_tables.wezterm, {
+  --   key = 'K', mods = 'CTRL|SHIFT',
+  --   action = wezterm.action.ClearScrollback 'ScrollbackOnly',
+  -- })
+  -- To change the always-on toggle, edit only its key/modifiers; its action
+  -- stays the same. Named tables fall through to that one global binding.
+  -- config.keys[2].key = 'F11'
+  -- config.keys[2].mods = 'CTRL|SHIFT'
+  -- To change the WEZ-only command prefix, edit the first WEZ binding:
+  -- config.key_tables.wezterm[1].key = ' ' -- Literal space (mapped character).
+  -- config.key_tables.wezterm[1].mods = 'CTRL|ALT'
 
   -- Shells ------------------------------------------------------------------
   -- Leave default_prog unset to use WezTerm's platform default. If overriding

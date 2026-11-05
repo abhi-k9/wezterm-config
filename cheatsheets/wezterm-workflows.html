@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark light">
-  <meta name="description" content="Task recipes · finish work, arrange panes, find output, and manage projects">
-  <title>WezTerm — Workflows</title>
-  <style>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="description" content="Task recipes · nested editing, scrolling, clipboard, and session scope">
+<title>WezTerm — Workflows</title><style>
     :root {
       /* Catppuccin Macchiato; overlay2 keeps small notes readable on dark surfaces. */
       --bg:#24273a;--surface:#1e2030;--overlay:#363a4f;--muted:#a5adcb;
@@ -103,128 +99,86 @@
     figcaption{margin-top:9px;color:var(--muted);font-size:12px}
     .intro{margin:0 0 18px;color:var(--subtext);max-width:100ch}
     @media print{nav{display:none}.intro{font-size:10px;margin-bottom:10px}figcaption{font-size:9px}}
-  </style>
-</head>
-<body>
-<div class="sheet">
-  <header>
-    <div><h1>WezTerm — Workflows</h1><p class="subtitle">Task recipes · finish work, arrange panes, find output, and manage projects</p></div>
-    <div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>Shared config targets WezTerm 20240203-110809-5046fc22 or newer.</p></div>
-  </header>
-  <nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html">Keymap</a> <a href="wezterm-workflows.html" aria-current="page">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav>
-  <p class="intro">Choose a task, then follow its steps. <strong>Leader</strong> means Escape followed by the next key. The complete shortcut catalog is in <a href="wezterm-keymap.html">keymap</a>; the object model and persistence rules are in <a href="wezterm-architecture.html">architecture</a>.</p>
-  <main class="grid"><section class="card full" style="--accent:var(--red)" aria-labelledby="workflow-close">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-close">Finish work and close the intended scope</h2></div>
-  <div class="body">
+
+.card:not(.full):not(.wide) .scope-table th{width:46%}
+</style>
+</head><body><div class="sheet">
+<header><div><h1>WezTerm — Workflows</h1><p class="subtitle">Task recipes · nested editing, scrolling, clipboard, and session scope</p></div><div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>APP by default · WEZ controls on demand</p></div></header>
+<nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html">Keymap</a> <a href="wezterm-workflows.html" aria-current="page">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav><p class="intro">Daily work starts in <strong>APP</strong>. Temporarily choose <strong>WEZ</strong> for outer controls, then return APP. Full shortcut tables are in <a href="wezterm-keymap.html">keymap</a>; relationships are in <a href="wezterm-architecture.html">architecture</a>.</p>
+<main class="grid">
+<section class="card " style="--accent:var(--teal)" aria-labelledby="workflow-edit"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-edit">Daily editing: APP → Zellij → Neovim</h2></div><div class="body">
 <ol class="steps">
-  <li>Save changes in the applications you want to stop. Focus the pane or tab you intend to close; use <kbd>Leader</kbd> <kbd>f</kbd> if the active pane is unclear.</li>
-  <li>For <strong>one pane</strong>, press <kbd>Esc</kbd> → <kbd>x</kbd>. To finish a shell normally instead, enter <code>exit</code> at its prompt. Exiting a nested shell or an editor can return to the parent program rather than remove the pane.</li>
-  <li>For an <strong>entire tab</strong>, press <kbd>Ctrl+Shift+W</kbd>, or <kbd>Cmd+W</kbd> on macOS. This closes every split in that tab, not just the focused pane.</li>
-  <li>For the <strong>whole window</strong>, click its native close button. Check all its tabs first. On Windows, <kbd>Alt+F4</kbd> requests the same window-level close.</li>
-  <li>Respond to any confirmation prompt. A safe/idle shell may close immediately even though confirmation is enabled.</li>
-</ol>
-<p class="note" style="margin-top:10px">In the default local setup, closing sessions ends their associated terminal programs; it is not a detach/save operation. To put a project aside while it continues running, switch workspaces instead. See <a href="wezterm-architecture.html#lifetime">lifetime and persistence</a> for remote/separate-mux considerations.</p>
-</div>
-</section>
-<section class="card blue" style="--accent:var(--blue)" aria-labelledby="workflow-split">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-split">Workflow — editor + shell + logs</h2></div>
-      <div class="body steps">
-        <ol>
-          <li>Open an editor in the first pane.</li>
-          <li><kbd>Leader</kbd> <kbd>Shift+|</kbd> creates a pane to its right; run your shell commands there.</li>
-          <li><kbd>Leader</kbd> <kbd>-</kbd> splits that pane above/below; run a log watcher in the new pane.</li>
-          <li>Focus with <kbd>Leader</kbd> <kbd>h/j/k/l</kbd> or select a pane using <kbd>Leader</kbd> <kbd>f</kbd>.</li>
-          <li><kbd>Leader</kbd> <kbd>z</kbd> enlarges a pane temporarily. Repeat to return to the layout.</li>
-        </ol>
-      </div>
-    </section>
-<section class="card teal" style="--accent:var(--teal)" aria-labelledby="workflow-scroll">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-scroll">Read long output and scroll fast</h2></div>
-  <div class="body steps">
-    <ol>
-      <li>Focus the pane containing the output. Its scrollbar is at the window's right edge; drag the thumb to move through its history.</li>
-      <li>For quick keyboard paging, hold <kbd>Shift</kbd> and press <kbd>PageUp</kbd> / <kbd>PageDown</kbd>. On a compact Mac keyboard, use <kbd>Shift+Fn+↑</kbd> / <kbd>Shift+Fn+↓</kbd>.</li>
-      <li>For long jumps without page keys, enter copy mode with <kbd>Esc</kbd> → <kbd>[</kbd>. Use <kbd>Ctrl+b</kbd> / <kbd>Ctrl+f</kbd> for pages, or <kbd>Ctrl+u</kbd> / <kbd>Ctrl+d</kbd> for half-pages.</li>
-      <li>Press <kbd>g</kbd> for the oldest retained output, or <kbd>Shift+g</kbd> for the newest. Press <kbd>q</kbd> to leave copy mode.</li>
-      <li>To resume following live output, jump to the newest output before leaving copy mode, or type at the shell prompt: <code>scroll_to_bottom_on_input = true</code> returns the viewport to the bottom on input.</li>
-    </ol>
-    <p class="note" style="margin-top:10px">For a specific error, use search instead of repeated paging: <kbd>Leader</kbd> <kbd>s</kbd>, then <kbd>Ctrl+n</kbd> / <kbd>Ctrl+p</kbd> between matches. The complete bindings are in <a href="wezterm-keymap.html#scrolling">keymap: scrolling</a>.</p>
-    <p class="note">If the bar is missing after updating, copy the new shared <code>.wezterm.lua</code> into your active home-directory location and reload. Check for a local <code>enable_scroll_bar = false</code> override. History limits and full-screen app behavior are covered in <a href="wezterm-architecture.html#scrollback">architecture: scrollback</a>.</p>
-  </div>
-</section>
-<section class="card teal" style="--accent:var(--teal)" aria-labelledby="workflow-copy">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-copy">Workflow — find &amp; copy output</h2></div>
-      <div class="body steps">
-        <ol>
-          <li><kbd>Leader</kbd> <kbd>s</kbd> opens search. Enter a term, then navigate matches with <kbd>Ctrl+n</kbd> / <kbd>Ctrl+p</kbd>.</li>
-          <li>For precise keyboard selection, enter copy mode with <kbd>Leader</kbd> <kbd>[</kbd>.</li>
-          <li>Move to the text; press <kbd>v</kbd> for characters or <kbd>Shift+v</kbd> for whole lines, then extend the selection.</li>
-          <li><kbd>y</kbd> copies and leaves copy mode. Paste with <kbd>Ctrl+Shift+v</kbd>, or <kbd>Cmd+v</kbd> on macOS.</li>
-        </ol>
-        <p class="note" style="margin-top:9px">Scrollback is limited by <code>scrollback_lines</code>; increasing it retains more output per pane and uses more memory.</p>
-      </div>
-    </section>
-<section class="card mauve" style="--accent:var(--mauve)" aria-labelledby="workflow-projects">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-projects">Workflow — separate projects</h2></div>
-      <div class="body steps">
-        <ol>
-          <li><kbd>Leader</kbd> <kbd>w</kbd> opens the workspace selector. Choose an existing workspace or its create-workspace entry.</li>
-          <li>The create entry assigns a name automatically. From a pane in that workspace, run <code>wezterm cli rename-workspace project</code> to choose a meaningful name.</li>
-          <li><kbd>Leader</kbd> <kbd>c</kbd> adds a tab. Use <kbd>Leader</kbd> <kbd>b</kbd> / <kbd>n</kbd> to switch tabs.</li>
-          <li><kbd>Leader</kbd> <kbd>p</kbd> shows profiles, tabs, and workspaces together.</li>
-        </ol>
-        <p class="note" style="margin-top:9px">Workspace names and layouts belong to the running mux. Use a separate session manager if you need explicit persistence or program restoration.</p>
-      </div>
-    </section>
-<section class="card " style="--accent:var(--green)" aria-labelledby="workflow-profile">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-profile">Use a machine-only launch profile</h2></div>
-  <div class="body">
+<li>Leave WezTerm in APP and start Zellij with your usual launcher.</li>
+<li>Open Neovim in an inner pane. Use F12 until Zellij indicates Locked when its ordinary bindings should reach the editor.</li>
+<li>Use Escape normally. Alt+Enter still controls fullscreen without changing Zellij’s lock state.</li>
+<li>Unlock Zellij with F12 for pane/tab/session commands. WezTerm stays APP.</li>
+</ol><p class="note" style="margin-top:10px">APP and Zellij Locked are independent. The outer mode toggle is Ctrl+Shift+F12; plain F12 belongs to Zellij.</p>
+</div></section>
+<section class="card " style="--accent:var(--blue)" aria-labelledby="workflow-wez"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-wez">Temporarily use outer controls</h2></div><div class="body">
 <ol class="steps">
-  <li>Install the shared config using the <a href="../docs/SETUP.md">OS setup guide</a>.</li>
-  <li>Copy the tracked, commented <code>wezterm.local.lua</code> into your home directory beside the active <code>.wezterm.lua</code>. Keep an existing private file rather than replacing it.</li>
-  <li>Edit only the installed copy. Add a <code>config.launch_menu</code> entry guarded by the platform and the availability of its local initialization script.</li>
-  <li>Reload with <kbd>Ctrl+Shift+r</kbd>, or <kbd>Cmd+r</kbd> on macOS. Open <kbd>Leader</kbd> <kbd>p</kbd> and select the profile.</li>
+<li>Toggle Ctrl+Shift+F12 and check for WEZ in the outer tab bar.</li>
+<li>Use fonts/clipboard directly, or press Ctrl+Shift+Space, release, then p for the launcher, c for an outer tab, or another prefix command.</li>
+<li>Return to APP with the same mode toggle. Pending command tables and copy/search UI are released.</li>
+<li>Keep Zellij’s lock state as needed; switching WezTerm mode never sends it a plain F12.</li>
+</ol><p class="note" style="margin-top:10px">The mode covers all outer tabs/panes in this GUI window. Another native window has an independent mode and starts APP.</p>
+</div></section>
+<section class="card " style="--accent:var(--sky)" aria-labelledby="workflow-scroll"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-scroll">Scroll an inner Zellij pane quickly</h2></div><div class="body">
+<ol class="steps">
+<li>Focus the inner pane that produced the shell/build output. In APP, unlock Zellij with F12 if its status says Locked.</li>
+<li>Press Ctrl+s for Zellij Scroll mode. Ctrl+b / Ctrl+f or PageUp/PageDown move by a page; u / d move by half-pages.</li>
+<li>Press Ctrl+c to return to the bottom and Zellij Normal. Escape/Enter also leave Scroll mode.</li>
+<li>Re-lock Zellij with F12 before returning to editor shortcuts if desired.</li>
+</ol><p class="note" style="margin-top:10px">For a shell directly in WezTerm, enter WEZ for Shift+PageUp/PageDown or prefix [. Mac compact page keys are Fn+↑/↓; add Shift for outer paging. The outer scrollbar is not an inner-pane history selector. <a href="wezterm-keymap.html#scrolling">Scrolling key reference</a>.</p>
+</div></section>
+<section class="card " style="--accent:var(--yellow)" aria-labelledby="workflow-copy"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-copy">Copy and paste at the right layer</h2></div><div class="body">
+<ol class="steps">
+<li>For inner text, use Neovim’s configured clipboard provider or Zellij’s copy operation. OSC52 can deliver clipboard writes to the host with a suitable setup.</li>
+<li>To paste from the host clipboard, toggle WEZ and use Ctrl+Shift+v, or Cmd+v on macOS.</li>
+<li>For an outer-terminal selection, copy in WEZ with Ctrl+Shift+c / Cmd+c. Prefix [ offers keyboard selection of outer history.</li>
+<li>Return APP and test clipboard behavior with non-sensitive text along any SSH/WSL path you use.</li>
+</ol><p class="note" style="margin-top:10px">This config does not configure Neovim’s clipboard provider. A WezTerm selection covers the rendered outer terminal; use the editor for a semantic buffer selection.</p>
+</div></section>
+<section class="card " style="--accent:var(--green)" aria-labelledby="workflow-split"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-split">Arrange editor, shell, and logs in Zellij</h2></div><div class="body">
+<ol class="steps">
+<li>In APP, unlock Zellij if it is Locked.</li>
+<li>Use Zellij Pane mode (Ctrl+p), then r for a right split or d for a lower split. Run the editor, build shell, and log viewer in the intended inner panes.</li>
+<li>Use Zellij’s focus/resize controls, and F12 Locked for Neovim’s own editor splits and mappings.</li>
+<li>Use WEZ outer splits only when an additional outer session is useful; its prefix | / - creates those separate outer terminals.</li>
+</ol><p class="note" style="margin-top:10px">A Neovim editor split, Zellij pane, and WezTerm pane belong to different layers. See <a href="wezterm-architecture.html#model">the hierarchy</a>.</p>
+</div></section>
+<section class="card full" style="--accent:var(--red)" aria-labelledby="workflow-close"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-close">Finish work and close the intended scope</h2></div><div class="body">
+<ol class="steps">
+<li>Save editor changes. Neovim :wq saves/quits an editor window; :q may return to a parent shell and refuses unsaved changes.</li>
+<li>For an inner pane or tab, unlock Zellij and use Ctrl+p then x (pane) or Ctrl+t then x (tab).</li>
+<li>To preserve a Zellij session before leaving its outer terminal, use Zellij Normal, Ctrl+o then d to detach explicitly.</li>
+<li>For an outer close, enter WEZ: prefix x closes an outer pane, Ctrl+Shift+W / Cmd+W closes an outer tab. A native close button/Alt+F4 affects the window.</li>
+<li>Respond to any outer confirmation. A stateless/idle process may be exempt.</li>
+</ol><p class="note" style="margin-top:10px">Closing the outer client may detach or end the Zellij session according to its on_force_close policy. The companion shared config uses detach; confirm the policy in the setup actually running. See <a href="wezterm-keymap.html#closing">close actions</a> and <a href="wezterm-architecture.html#lifetime">lifetime</a>.</p>
+</div></section>
+<section class="card " style="--accent:var(--mauve)" aria-labelledby="workflow-profile"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-profile">Use a machine-only launch profile</h2></div><div class="body">
+<ol class="steps">
+<li>Keep private commands in the installed home-directory wezterm.local.lua beside the active .wezterm.lua.</li>
+<li>Guard machine-only menu entries by platform/tool availability. The tracked local file stays a commented public example.</li>
+<li>After an edit, enter WEZ and reload with Ctrl+Shift+r / Cmd+r. The badge returns APP.</li>
+<li>Enter WEZ, prefix p, and choose the launch entry. Return APP for normal terminal use.</li>
+</ol><p class="note" style="margin-top:10px">A missing local file is allowed. Legacy leader/default-key overrides are rejected; launch-menu-only overrides remain compatible.</p>
+</div></section>
+<section class="card " style="--accent:var(--peach)" aria-labelledby="workflow-projects"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-projects">Separate inner sessions and outer projects</h2></div><div class="body">
+<ol class="steps">
+<li>Use Zellij’s own tabs/sessions to organize work inside a client; name sessions with the launcher you normally use.</li>
+<li>For outer WezTerm workspace grouping, enter WEZ and use prefix w. The create entry assigns a name automatically.</li>
+<li>From a pane in that outer workspace, <code>wezterm cli rename-workspace project</code> gives it a meaningful name.</li>
+<li>Re-enter APP for work. An outer workspace is not a saved Zellij/Neovim application state.</li>
 </ol>
-<p class="note" style="margin-top:10px">A missing local file is allowed. The repository copy is a public no-op example. Private paths and commands belong outside the checkout; a machine without the required tools should omit that launch entry.</p>
-</div>
-</section>
-<section class="card " style="--accent:var(--yellow)" aria-labelledby="workflow-exit">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-exit">A process exited but its pane stayed open</h2></div>
-  <div class="body">
-<ol>
-  <li>Read the exit message and retained output. The shared <code>exit_behavior = 'CloseOnCleanExit'</code> keeps failed processes visible for diagnosis.</li>
-  <li>Fix the command or its local profile if required. A held pane does not mean its command is still running.</li>
-  <li>Dismiss that pane with <kbd>Leader</kbd> <kbd>x</kbd>, then open a new tab/pane or select the corrected profile.</li>
-</ol>
-<p class="note" style="margin-top:10px">Interrupting an application is different from closing its terminal. At a shell, <kbd>Ctrl+C</kbd> normally interrupts foreground work and leaves the shell open; it does not replace the close commands.</p>
-</div>
-</section>
-<section class="card " style="--accent:var(--peach)" aria-labelledby="workflow-update">
-  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-update">Update settings without replacing private overrides</h2></div>
-  <div class="body">
-<ol>
-  <li>For a shared update, follow <a href="../docs/SETUP.md#update-the-shared-config">the update instructions</a>: pull the checkout and copy its <code>.wezterm.lua</code> to the active home-directory location.</li>
-  <li>Leave your installed <code>wezterm.local.lua</code> in place. Edit personal font/shell/leader preferences there.</li>
-  <li>Reload and check for configuration errors. Initial rows/columns affect new windows; they do not resize an existing window on reload.</li>
-</ol>
-<p class="note" style="margin-top:10px">Creating the optional local file for the first time may require a manual reload. Existing files are watched for edits. Changing settings does not restart already running applications.</p>
-</div>
-</section>
-<section class="card full" style="--accent:var(--peach)" aria-labelledby="cli">
-      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="cli">Command-line reference</h2><span class="badge">use an installed wezterm executable</span></div>
-      <table aria-label="WezTerm command-line commands">
-        <tr><th scope="row"><code>wezterm --config-file /path/to/.wezterm.lua show-keys --lua</code></th><td>Load that configuration and inspect its effective bindings, including defaults.</td></tr>
-        <tr><th scope="row"><code>wezterm --config-file /path/to/.wezterm.lua ls-fonts</code></th><td>Inspect actual font resolution and fallbacks.</td></tr>
-        <tr><th scope="row"><code>wezterm start --cwd /path/to/project</code></th><td>Open a terminal in a chosen directory.</td></tr>
-        <tr><th scope="row"><code>wezterm start -- program arg</code></th><td>Run a specific program instead of the default shell. Use native quoting for your shell.</td></tr>
-        <tr><th scope="row"><code>wezterm cli list</code></th><td>List windows, tabs, and panes in a running local instance.</td></tr>
-        <tr><th scope="row"><code>wezterm cli split-pane --right</code><br><code>wezterm cli split-pane --bottom</code></th><td>Create a right-side / lower pane from inside WezTerm.</td></tr>
-        <tr><th scope="row"><code>wezterm cli spawn --new-window --workspace project</code></th><td>Create a window in a named workspace in the running mux.</td></tr>
-        <tr><th scope="row"><code>wezterm cli rename-workspace project</code></th><td>Rename the workspace containing the current pane.</td></tr>
-      </table>
-      <div class="body note">CLI pane commands can target another pane with <code>--pane-id ID</code>. A workspace is not a guarantee of process persistence; closing its multiplexer ends the associated processes.</div>
-    </section></main>
-  <footer><span>Private home-directory overrides may change the shared settings.</span><span>Each sheet has its own focus; companion links open the other sheets.</span><span><a href="../docs/SETUP.md">Setup guide</a> · <a href="../README.md">Repository guide</a> · <a href="https://wezterm.org/config/keys.html">Official key reference</a></span></footer>
-</div>
-</body>
-</html>
+</div></section>
+<section class="card " style="--accent:var(--blue)" aria-labelledby="workflow-update"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-update">Upgrade or reload without restoring the old key trap</h2></div><div class="body">
+<ol class="steps">
+<li>Follow <a href="../docs/SETUP.md#update-the-shared-config">the copy-based update instructions</a>; pulling Git alone does not update the active home-directory file.</li>
+<li>Keep private launch profiles. Remove enabled legacy config.leader or default-binding overrides; put extra terminal shortcuts in config.key_tables.wezterm.</li>
+<li>For the first upgrade, reload using the current old map. Afterwards toggle WEZ before Ctrl+Shift+r / Cmd+r.</li>
+<li>Expect APP after reload. Check one Escape in Neovim, F12 in Zellij, fullscreen, and the independent window toggle.</li>
+</ol><p class="note" style="margin-top:10px">Reloading settings does not restart running programs. See the <a href="../docs/INPUT.md#upgrade-from-the-escape-leader-configuration">migration checklist</a> and <a href="../docs/INPUT.md#verify-on-each-machine">platform verification</a>.</p>
+</div></section>
+</main>
+<footer><span>WezTerm 20240203-110809-5046fc22+ · local overrides may change bindings.</span><span><a href="../docs/INPUT.md">Input-routing guide</a> · <a href="../docs/SETUP.md">OS setup</a> · <a href="../README.md">Repository guide</a></span></footer>
+</div></body></html>
