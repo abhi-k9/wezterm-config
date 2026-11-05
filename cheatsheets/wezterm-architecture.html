@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Concepts · terminal objects, execution domains, configuration, and lifetime">
+  <title>WezTerm — Architecture</title>
+  <style>
+    :root {
+      /* Catppuccin Macchiato; overlay2 keeps small notes readable on dark surfaces. */
+      --bg:#24273a;--surface:#1e2030;--overlay:#363a4f;--muted:#a5adcb;
+      --text:#cad3f5;--subtext:#b8c0e0;--lavender:#b7bdf8;--blue:#8aadf4;
+      --sky:#91d7e3;--teal:#8bd5ca;--green:#a6da95;--yellow:#eed49f;
+      --peach:#f5a97f;--red:#ed8796;--mauve:#c6a0f6;--pink:#f5bde6;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;padding:26px 28px 40px;background:var(--bg);color:var(--text);
+      font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+    .sheet{max-width:1700px;margin:auto}
+    header{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+      margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid var(--overlay)}
+    h1{margin:0;color:var(--lavender);font-size:24px;letter-spacing:-.6px}
+    .subtitle{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .meta{max-width:440px;color:var(--muted);text-align:right;font-size:12px}
+    .meta p{margin:3px 0}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:start}
+    .card{min-width:0;background:var(--surface);border:1px solid var(--overlay);border-radius:8px;overflow:hidden}
+    .full{grid-column:1/-1}
+    .wide{grid-column:span 2}
+    .card-header{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--overlay)}
+    h2{font-size:11px;text-transform:uppercase;letter-spacing:.85px;margin:0;color:var(--subtext)}
+    .dot{height:8px;width:8px;border-radius:50%;background:var(--accent,var(--lavender));flex:none}
+    .badge{margin-left:auto;font-size:10px;color:var(--muted);padding:1px 5px;border:1px solid var(--overlay);border-radius:4px;text-align:right}
+    .body{padding:11px 13px}
+    p{margin:0 0 9px}
+    p:last-child{margin-bottom:0}
+    .note{color:var(--muted);font-size:12px}
+    .important{color:var(--yellow)}
+    .label{color:var(--teal);font-weight:600}
+    table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:auto}
+    th,td{padding:6px 11px;vertical-align:top;text-align:left;overflow-wrap:anywhere}
+    th{font-weight:500;width:1%;white-space:nowrap;color:var(--text)}
+    td{color:var(--subtext)}
+    tr+tr>*{border-top:1px solid var(--overlay)}
+    .divider th{width:auto;white-space:normal;font-size:10px;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.6px;background:var(--bg);padding-top:5px;padding-bottom:5px}
+    kbd,code,pre{font-family:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace}
+    kbd{display:inline-block;padding:1px 5px;font-size:11px;line-height:1.65;white-space:nowrap;
+      border:1px solid var(--overlay);border-radius:4px;background:var(--bg);color:var(--text)}
+    .blue kbd{color:var(--blue)}.green kbd{color:var(--green)}.yellow kbd{color:var(--yellow)}
+    .mauve kbd{color:var(--mauve)}.peach kbd{color:var(--peach)}.teal kbd{color:var(--teal)}
+    .red kbd{color:var(--red)}
+    code{font-size:.9em;color:var(--sky);overflow-wrap:anywhere}
+    pre{font-size:11.5px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0;
+      background:var(--bg);padding:9px 11px;border-radius:5px;color:var(--text)}
+    pre code{font-size:inherit;color:inherit}
+    a{color:var(--blue);text-decoration-thickness:1px;text-underline-offset:3px}
+    a:hover{color:var(--sky)}a:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+    ol,ul{padding-left:20px;margin:0}li+li{margin-top:6px}
+    .leader-layout{display:grid;grid-template-columns:1fr 1fr;gap:10px 25px}
+    .leader-layout strong{color:var(--lavender)}
+    .steps kbd{margin:0 1px}
+    .settings th{white-space:normal;width:35%}
+    .locations th{white-space:normal;width:26%}
+    footer{display:flex;justify-content:space-between;gap:15px;margin-top:18px;padding-top:12px;
+      border-top:1px solid var(--overlay);color:var(--muted);font-size:11px}
+    @media(max-width:1180px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wide{grid-column:1/-1}
+      th{white-space:normal}header{align-items:flex-start}.meta{max-width:330px}
+    }
+    @media(max-width:700px){
+      body{padding:18px 12px 28px}.grid{grid-template-columns:minmax(0,1fr);gap:12px}
+      header,footer{display:block}.meta{max-width:none;text-align:left;margin-top:12px}
+      h1{font-size:23px}.leader-layout{grid-template-columns:minmax(0,1fr)}
+      th{width:38%;white-space:normal}th,td{padding:7px 10px}.badge{font-size:9px}
+      footer>span{display:block;margin-top:6px}
+    }
+    @media print{
+      :root{--bg:#fff;--surface:#fff;--overlay:#ccc;--muted:#555;--text:#111;--subtext:#222;
+        --lavender:#333;--blue:#134a83;--sky:#134a83;--teal:#215c42;--green:#215c42;
+        --yellow:#664400;--peach:#664400;--red:#7b1725;--mauve:#50316b;--pink:#50316b}
+      @page{margin:10mm}
+      body{padding:0;font-size:10px}header{margin-bottom:10px;padding-bottom:9px}h1{font-size:18px}
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.wide,.full{grid-column:1/-1}
+      .card{break-inside:avoid;box-shadow:none;border-radius:4px}.card-header{padding:6px 9px}
+      h2{font-size:9px}.body{padding:8px 10px}table{font-size:10px}th,td{padding:4px 8px}
+      th{width:38%;white-space:normal}.full table{table-layout:fixed}.full table th{width:48%}
+      kbd{font-size:9px;background:#f5f5f5;color:#111!important;border-color:#aaa}
+      .note,.subtitle,.meta{font-size:9px}pre{font-size:9px;border:1px solid #ddd;padding:7px}
+      .dot{background:#777}footer{display:none}.important{color:#664400}
+      a{color:#111;text-decoration:none}p{margin-bottom:6px}
+    }
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+    nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 18px;font-size:12px}
+    nav a[aria-current="page"]{color:var(--teal);font-weight:700}
+    .scope-table{table-layout:fixed}.scope-table th,.full .scope-table th{width:24%;white-space:normal}
+    .concepts th{width:28%;white-space:normal}
+    .tree{margin:0}.tree ul{list-style:none;padding-left:20px;border-left:1px solid var(--overlay)}
+    .tree li{padding:5px 0 5px 8px}.tree strong{color:var(--lavender)}
+    figcaption{margin-top:9px;color:var(--muted);font-size:12px}
+    .intro{margin:0 0 18px;color:var(--subtext);max-width:100ch}
+    @media print{nav{display:none}.intro{font-size:10px;margin-bottom:10px}figcaption{font-size:9px}}
+  </style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div><h1>WezTerm — Architecture</h1><p class="subtitle">Concepts · terminal objects, execution domains, configuration, and lifetime</p></div>
+    <div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>Shared config targets WezTerm 20240203-110809-5046fc22 or newer.</p></div>
+  </header>
+  <nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html" aria-current="page">Architecture</a></nav>
+  <p class="intro">Understand what an action affects before using it. This sheet explains relationships and lifetime. Use <a href="wezterm-keymap.html">keymap</a> for shortcuts and <a href="wezterm-workflows.html">workflows</a> for task sequences.</p>
+  <main class="grid"><section class="card wide" style="--accent:var(--lavender)" aria-labelledby="model">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="model">The object model</h2></div>
+  <div class="body">
+<figure class="tree" aria-labelledby="model-caption">
+  <strong>Multiplexer (mux)</strong> manages live terminal objects
+  <ul><li><strong>Workspace: project</strong> — groups mux windows
+    <ul><li><strong>Mux window</strong> — displayed by a native GUI window
+      <ul><li><strong>Tab 0</strong> — one split layout
+        <ul><li><strong>Pane</strong> — shell / editor</li><li><strong>Pane</strong> — shell / build output</li></ul>
+      </li><li><strong>Tab 1</strong> — another layout
+        <ul><li><strong>Pane</strong> — log viewer</li></ul>
+      </li></ul>
+    </li></ul>
+  </li></ul>
+  <figcaption id="model-caption">A pane belongs to an execution domain. Domains cross the grouping shown here: different panes can use different execution backends. The normal GUI includes a local mux; a standalone mux server is optional.</figcaption>
+</figure>
+</div>
+</section>
+<section class="card " style="--accent:var(--blue)" aria-labelledby="terms">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="terms">Pane, tab, and window</h2></div>
+  <div class="body">
+<p><span class="label">Pane:</span> one terminal session, with its PTY and a shell or application. A foreground editor/build runs inside that session. Focus chooses which pane receives input.</p>
+<p><span class="label">Tab:</span> a collection of panes arranged into a split layout. Each tab has an active pane. Zoom changes the view of one pane; it does not create a different session.</p>
+<p><span class="label">Window:</span> the native OS window displays a mux window's tabs. A window can contain many tabs, and a tab can contain many panes.</p>
+<p class="note">A tab index is a position (zero-based in this config); a pane ID is an identifier used by CLI operations. They are not interchangeable.</p>
+</div>
+</section>
+<section class="card full" style="--accent:var(--red)" aria-labelledby="lifetime">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="lifetime">Close scope and process lifetime</h2></div>
+  <div class="body">
+<table class="scope-table" aria-label="Effects of closing terminal objects">
+  <tr><th scope="row">Close pane</th><td>Shuts down that terminal session and its associated process. If it was the last pane, its tab disappears too.</td></tr>
+  <tr><th scope="row">Close tab</th><td>Closes every pane in that tab. Other tabs remain; closing the last tab removes its window.</td></tr>
+  <tr><th scope="row">Close window</th><td>Closes the window's tabs/panes in the normal local setup. Other windows are separate scopes.</td></tr>
+  <tr><th scope="row">Quit application</th><td>Exits the GUI application rather than closing only one window. Use the native application Quit action when that is the intention.</td></tr>
+  <tr><th scope="row">Switch workspace</th><td>Changes which project's windows are shown. It does not intentionally terminate their sessions.</td></tr>
+</table>
+<p class="note" style="margin-top:10px">A separate mux server or remote domain can manage sessions independently of a GUI connection. Those setups have their own detach/persistence behavior. This repository does not configure persistent remote sessions; do not treat a normal local window close as a detach operation.</p>
+<p class="note">Window close and application quit are distinct OS actions, particularly on macOS. Whether the application remains after its last window closes depends on the frontend/platform.</p>
+<p><a href="wezterm-keymap.html#closing">Close shortcuts</a> · <a href="wezterm-workflows.html#workflow-close">Step-by-step closing workflow</a></p>
+</div>
+</section>
+<section class="card " style="--accent:var(--yellow)" aria-labelledby="confirmation">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="confirmation">Confirmation and process exit are separate</h2></div>
+  <div class="body">
+<p><span class="label">Explicit close:</span> pane/tab key actions use <code>confirm = true</code>. Native window close uses <code>window_close_confirmation = 'AlwaysPrompt'</code>. These are separate controls.</p>
+<p>Even with confirmation enabled, WezTerm can skip the prompt when it judges the contained process safe to close. <code>skip_close_confirmation_for_processes_named</code> lists process names such as idle shells that may be exempt.</p>
+<p><span class="label">Program exits itself:</span> <code>exit_behavior = 'CloseOnCleanExit'</code> closes cleanly exited processes and retains failed ones for inspection. A retained pane may have no running process.</p>
+<p class="note">Confirmations are not file saves or process checkpoints. Save application data before ending the session.</p>
+</div>
+</section>
+<section class="card " style="--accent:var(--mauve)" aria-labelledby="workspaces">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workspaces">Workspaces group live projects</h2></div>
+  <div class="body">
+<p>A named workspace groups mux windows. Its windows contain the usual tabs and panes. Switching the active workspace shows a different group while the other project's processes can continue.</p>
+<p>Workspace names organize live state; they do not serialize applications or restore them after reboot. A saved Lua configuration describes preferences and launch actions, not the state of your editor or shell.</p>
+<p class="note">Multiple projects can use the same local domain. The workspace name does not select a shell, machine, container, or filesystem.</p>
+</div>
+</section>
+<section class="card " style="--accent:var(--teal)" aria-labelledby="domains">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="domains">Domains choose the execution backend</h2></div>
+  <div class="body">
+<p>A domain connects panes to an execution backend: local processes, or an optionally configured WSL/SSH/mux connection. Each pane belongs to a domain; workspaces and tab layouts are separate grouping choices.</p>
+<p>The shared split/new-tab actions use <code>CurrentPaneDomain</code>, so a new terminal follows the focused pane's domain. A new local pane runs locally; following a remote domain depends on that domain's configuration.</p>
+<p class="note">The shared config leaves domain configuration at WezTerm's defaults. It does not set up an SSH server, WSL distribution, or standalone mux service.</p>
+</div>
+</section>
+<section class="card " style="--accent:var(--green)" aria-labelledby="profiles">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="profiles">Launch profiles describe commands</h2></div>
+  <div class="body">
+<p>A launch-menu profile is a command plus arguments (and optionally environment/directory settings). Selecting it starts a terminal program with those inputs; merely listing it does not run it.</p>
+<p>A profile is not a saved pane or workspace. The executable, initialization files, and dependencies must exist on the machine/backend where the command executes.</p>
+<p class="note">The shared menu offers Windows shell choices only on Windows. Private machine-only launch entries belong in the installed home-directory local config and should check platform/tool availability.</p>
+</div>
+</section>
+<section class="card wide" style="--accent:var(--peach)" aria-labelledby="configuration">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="configuration">Configuration files and live state</h2></div>
+  <div class="body">
+<table class="scope-table" aria-label="Configuration layers">
+  <tr><th scope="row">Git checkout</th><td>Versioned shared <code>.wezterm.lua</code> plus a commented, no-op <code>wezterm.local.lua</code> example. No private workstation commands belong here.</td></tr>
+  <tr><th scope="row">Installed shared file</th><td>The active home-directory <code>.wezterm.lua</code>. With copy-based setup, pulling Git does not update this copy automatically.</td></tr>
+  <tr><th scope="row">Optional local file</th><td><code>wezterm.local.lua</code> beside the active shared file. Returns a function applied last. Absence is allowed; malformed/unreadable files surface an error.</td></tr>
+  <tr><th scope="row">Live processes</th><td>Running shells/editors/builds belong to their terminal sessions. Reloading Lua settings does not restart them or turn their state into a backup.</td></tr>
+</table>
+<p class="note" style="margin-top:10px">The loader uses <code>wezterm.config_dir</code>, the active configuration directory. An explicit checkout <code>--config-file</code> loads the public checkout example, not a home-directory private override. See <a href="../docs/SETUP.md">setup</a> for OS paths and migration details.</p>
+</div>
+</section></main>
+  <footer><span>Private home-directory overrides may change the shared settings.</span><span>Each sheet has its own focus; companion links open the other sheets.</span><span><a href="../docs/SETUP.md">Setup guide</a> · <a href="../README.md">Repository guide</a> · <a href="https://wezterm.org/config/keys.html">Official key reference</a></span></footer>
+</div>
+</body>
+</html>

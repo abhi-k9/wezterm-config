@@ -3,9 +3,18 @@
 A documented configuration for Linux, Windows, and macOS, with Catppuccin
 Macchiato, a bottom tab bar, and leader shortcuts for tabs, panes, and workspaces.
 
-Open [the HTML cheatsheet](cheatsheets/wezterm-cheatsheet.html) in a browser for
-keybindings and common workflows. It is self-contained, works offline, adapts
-to smaller screens, and has a light print layout.
+Open a focused HTML cheatsheet in a browser:
+
+| Sheet | Use it for |
+| --- | --- |
+| [Keymap](cheatsheets/wezterm-keymap.html) | Look up shortcuts, including closing panes, tabs, and windows. |
+| [Workflows](cheatsheets/wezterm-workflows.html) | Follow task recipes for layouts, projects, copying output, and finishing work. |
+| [Architecture](cheatsheets/wezterm-architecture.html) | Understand panes, tabs, windows, workspaces, domains, profiles, and process lifetime. |
+
+Each sheet has inline styling, works offline, adapts to smaller screens, and has
+a light print layout. Download the companion files together for local navigation.
+The [original cheatsheet URL](cheatsheets/wezterm-cheatsheet.html) is now an overview
+linking to these separate references.
 
 ## Setup
 
@@ -91,7 +100,7 @@ type, and runtime errors surface instead of silently loading different settings.
 After creating the file for the first time, reload with `Ctrl+Shift+r` or `Cmd+r`
 on macOS. Existing files are registered for automatic reload on edits.
 
-## Leader and daily use
+## Daily use
 
 The default leader is **Escape** with a two-second timeout. Press Escape, release
 it, then press the action key. A single Escape is consumed; timing out does not
@@ -104,27 +113,16 @@ Changing the shared leader before the bindings are constructed also updates the
 forwarding shortcut automatically. `Ctrl+a` has its own application conflicts;
 choose according to your workflow.
 
-| Sequence | Action |
-| --- | --- |
-| Leader, `c` | New tab |
-| Leader, `b` / `n` | Previous / next tab |
-| Leader, `0`–`9` | Select zero-based tab index |
-| Leader, `Shift+\|` / `-` | Split side by side / above and below |
-| Leader, `h` / `j` / `k` / `l` | Focus left / down / up / right |
-| Leader, arrow | Resize by five cells; repeat leader for another resize |
-| Leader, `f` / `z` / `x` | Pane picker / zoom toggle / close with confirmation |
-| Leader, `p` / `w` | Launcher / workspaces |
-| Leader, `s` / `[` | Search / copy mode |
-| Leader, `r` / `Shift+?` | Reload / command palette |
+For pane, tab, and window close actions, see the
+[closing keymap](cheatsheets/wezterm-keymap.html#closing) and
+[closing workflow](cheatsheets/wezterm-workflows.html#workflow-close). A pane close
+affects one session; a tab close affects all its panes; a window close affects
+all its tabs in the default local setup. Confirmation can be skipped for idle
+shells. The [architecture sheet](cheatsheets/wezterm-architecture.html#lifetime)
+explains lifetime, close cascades, and how remote/persistent mux setups differ.
 
-`Ctrl+Shift+c/v/f/p/r` provide copy, paste, search, command palette, and reload.
-`Ctrl+Shift+=/-/0` increase, decrease, and reset the font size. Built-in shortcuts,
-including macOS Cmd shortcuts, remain enabled. Built-in tab-number shortcuts
-retain their usual numbering, so `Ctrl+Shift+1` selects the first tab while
-Leader, `1` selects the second.
-
-Workspaces group live windows/tabs/panes. They are not snapshots of running
-programs and do not provide restoration after the multiplexer exits or reboots.
+The complete shortcut catalog belongs to the keymap, task sequences to workflows,
+and object relationships to architecture. Local overrides may change the defaults.
 
 ## Checks
 

@@ -101,7 +101,7 @@ config.audible_bell = 'Disabled' -- Silence BEL; enable with 'SystemBeep'.
 config.exit_behavior = 'CloseOnCleanExit'
 config.window_close_confirmation = 'AlwaysPrompt'
 -- WezTerm can still skip prompts for processes it considers safe to close,
--- such as idle shells (skip_close_confirmation_for_processes). Closing a pane
+-- such as idle shells (skip_close_confirmation_for_processes_named). Closing a pane
 -- through Leader+x requests confirmation; this is not a session backup.
 
 -- Shells and launch menu ---------------------------------------------------

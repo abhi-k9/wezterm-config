@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Shortcut reference · shared bindings, built-in bindings, and OS controls">
+  <title>WezTerm — Keymap</title>
+  <style>
+    :root {
+      /* Catppuccin Macchiato; overlay2 keeps small notes readable on dark surfaces. */
+      --bg:#24273a;--surface:#1e2030;--overlay:#363a4f;--muted:#a5adcb;
+      --text:#cad3f5;--subtext:#b8c0e0;--lavender:#b7bdf8;--blue:#8aadf4;
+      --sky:#91d7e3;--teal:#8bd5ca;--green:#a6da95;--yellow:#eed49f;
+      --peach:#f5a97f;--red:#ed8796;--mauve:#c6a0f6;--pink:#f5bde6;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;padding:26px 28px 40px;background:var(--bg);color:var(--text);
+      font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+    .sheet{max-width:1700px;margin:auto}
+    header{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+      margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid var(--overlay)}
+    h1{margin:0;color:var(--lavender);font-size:24px;letter-spacing:-.6px}
+    .subtitle{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .meta{max-width:440px;color:var(--muted);text-align:right;font-size:12px}
+    .meta p{margin:3px 0}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:start}
+    .card{min-width:0;background:var(--surface);border:1px solid var(--overlay);border-radius:8px;overflow:hidden}
+    .full{grid-column:1/-1}
+    .wide{grid-column:span 2}
+    .card-header{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--overlay)}
+    h2{font-size:11px;text-transform:uppercase;letter-spacing:.85px;margin:0;color:var(--subtext)}
+    .dot{height:8px;width:8px;border-radius:50%;background:var(--accent,var(--lavender));flex:none}
+    .badge{margin-left:auto;font-size:10px;color:var(--muted);padding:1px 5px;border:1px solid var(--overlay);border-radius:4px;text-align:right}
+    .body{padding:11px 13px}
+    p{margin:0 0 9px}
+    p:last-child{margin-bottom:0}
+    .note{color:var(--muted);font-size:12px}
+    .important{color:var(--yellow)}
+    .label{color:var(--teal);font-weight:600}
+    table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:auto}
+    th,td{padding:6px 11px;vertical-align:top;text-align:left;overflow-wrap:anywhere}
+    th{font-weight:500;width:1%;white-space:nowrap;color:var(--text)}
+    td{color:var(--subtext)}
+    tr+tr>*{border-top:1px solid var(--overlay)}
+    .divider th{width:auto;white-space:normal;font-size:10px;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.6px;background:var(--bg);padding-top:5px;padding-bottom:5px}
+    kbd,code,pre{font-family:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace}
+    kbd{display:inline-block;padding:1px 5px;font-size:11px;line-height:1.65;white-space:nowrap;
+      border:1px solid var(--overlay);border-radius:4px;background:var(--bg);color:var(--text)}
+    .blue kbd{color:var(--blue)}.green kbd{color:var(--green)}.yellow kbd{color:var(--yellow)}
+    .mauve kbd{color:var(--mauve)}.peach kbd{color:var(--peach)}.teal kbd{color:var(--teal)}
+    .red kbd{color:var(--red)}
+    code{font-size:.9em;color:var(--sky);overflow-wrap:anywhere}
+    pre{font-size:11.5px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0;
+      background:var(--bg);padding:9px 11px;border-radius:5px;color:var(--text)}
+    pre code{font-size:inherit;color:inherit}
+    a{color:var(--blue);text-decoration-thickness:1px;text-underline-offset:3px}
+    a:hover{color:var(--sky)}a:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+    ol,ul{padding-left:20px;margin:0}li+li{margin-top:6px}
+    .leader-layout{display:grid;grid-template-columns:1fr 1fr;gap:10px 25px}
+    .leader-layout strong{color:var(--lavender)}
+    .steps kbd{margin:0 1px}
+    .settings th{white-space:normal;width:35%}
+    .locations th{white-space:normal;width:26%}
+    footer{display:flex;justify-content:space-between;gap:15px;margin-top:18px;padding-top:12px;
+      border-top:1px solid var(--overlay);color:var(--muted);font-size:11px}
+    @media(max-width:1180px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wide{grid-column:1/-1}
+      th{white-space:normal}header{align-items:flex-start}.meta{max-width:330px}
+    }
+    @media(max-width:700px){
+      body{padding:18px 12px 28px}.grid{grid-template-columns:minmax(0,1fr);gap:12px}
+      header,footer{display:block}.meta{max-width:none;text-align:left;margin-top:12px}
+      h1{font-size:23px}.leader-layout{grid-template-columns:minmax(0,1fr)}
+      th{width:38%;white-space:normal}th,td{padding:7px 10px}.badge{font-size:9px}
+      footer>span{display:block;margin-top:6px}
+    }
+    @media print{
+      :root{--bg:#fff;--surface:#fff;--overlay:#ccc;--muted:#555;--text:#111;--subtext:#222;
+        --lavender:#333;--blue:#134a83;--sky:#134a83;--teal:#215c42;--green:#215c42;
+        --yellow:#664400;--peach:#664400;--red:#7b1725;--mauve:#50316b;--pink:#50316b}
+      @page{margin:10mm}
+      body{padding:0;font-size:10px}header{margin-bottom:10px;padding-bottom:9px}h1{font-size:18px}
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.wide,.full{grid-column:1/-1}
+      .card{break-inside:avoid;box-shadow:none;border-radius:4px}.card-header{padding:6px 9px}
+      h2{font-size:9px}.body{padding:8px 10px}table{font-size:10px}th,td{padding:4px 8px}
+      th{width:38%;white-space:normal}.full table{table-layout:fixed}.full table th{width:48%}
+      kbd{font-size:9px;background:#f5f5f5;color:#111!important;border-color:#aaa}
+      .note,.subtitle,.meta{font-size:9px}pre{font-size:9px;border:1px solid #ddd;padding:7px}
+      .dot{background:#777}footer{display:none}.important{color:#664400}
+      a{color:#111;text-decoration:none}p{margin-bottom:6px}
+    }
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+    nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 18px;font-size:12px}
+    nav a[aria-current="page"]{color:var(--teal);font-weight:700}
+    .scope-table{table-layout:fixed}.scope-table th,.full .scope-table th{width:24%;white-space:normal}
+    .concepts th{width:28%;white-space:normal}
+    .tree{margin:0}.tree ul{list-style:none;padding-left:20px;border-left:1px solid var(--overlay)}
+    .tree li{padding:5px 0 5px 8px}.tree strong{color:var(--lavender)}
+    figcaption{margin-top:9px;color:var(--muted);font-size:12px}
+    .intro{margin:0 0 18px;color:var(--subtext);max-width:100ch}
+    @media print{nav{display:none}.intro{font-size:10px;margin-bottom:10px}figcaption{font-size:9px}}
+  </style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div><h1>WezTerm — Keymap</h1><p class="subtitle">Shortcut reference · shared bindings, built-in bindings, and OS controls</p></div>
+    <div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>Shared config targets WezTerm 20240203-110809-5046fc22 or newer.</p></div>
+  </header>
+  <nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html" aria-current="page">Keymap</a> <a href="wezterm-workflows.html">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav>
+  <p class="intro">Look up an action here. <strong>Leader</strong> means press Escape, release, then press the next key. For task sequences use <a href="wezterm-workflows.html">workflows</a>; for pane/tab/window relationships use <a href="wezterm-architecture.html">architecture</a>.</p>
+  <main class="grid"><section class="card full" aria-labelledby="leader">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="leader">Start here — the leader key</h2><span class="badge">one action per prefix · 2-second timeout</span></div>
+      <div class="body leader-layout">
+        <p><strong><kbd>Esc</kbd> → key</strong> activates a terminal action. For example, <kbd>Esc</kbd> then <kbd>c</kbd> opens a tab. The wave in the tab bar indicates that the leader is active.</p>
+        <p class="important"><strong>Escape changes application input.</strong> A single <kbd>Esc</kbd> is consumed; timeout does not send it to the app. Press <kbd>Esc</kbd> <kbd>Esc</kbd> to send one Escape. Unbound keys after the leader are also consumed.</p>
+        <p class="note">Hold modifiers shown with <strong>+</strong> together; arrows <strong>→</strong> between keycaps mean a sequence. “Leader + key” below always means a sequence, not holding Escape.</p>
+        <p class="note">If that interrupts your editor, use the complete <kbd>Ctrl+a</kbd> alternative in the installed copy of <code>wezterm.local.lua</code>. It updates the leader and its double-press forwarding shortcut together.</p>
+      </div>
+    </section>
+<section class="card full" style="--accent:var(--red)" aria-labelledby="closing">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="closing">Close a pane, tab, or window</h2></div>
+  <div class="body">
+<table class="scope-table" aria-label="Close shortcuts by scope">
+  <tr><th scope="row">Pane</th><td><kbd>Esc</kbd> → <kbd>x</kbd> — close the focused pane (<code>CloseCurrentPane</code>, shared binding).</td></tr>
+  <tr><th scope="row">Tab</th><td><kbd>Ctrl+Shift+W</kbd> on Windows/Linux; <kbd>Cmd+W</kbd> on macOS — close the current tab and <strong>all its panes</strong> (<code>CloseCurrentTab</code>, built-in).</td></tr>
+  <tr><th scope="row">Window</th><td>Use the native title-bar close button. <kbd>Alt+F4</kbd> is the Windows window-close shortcut and is common on Linux window managers. On macOS use the red close button. These target the window, including all its tabs.</td></tr>
+</table>
+<p class="note" style="margin-top:10px">Pane/tab actions request confirmation with <code>confirm = true</code>; native window closing uses <code>window_close_confirmation = 'AlwaysPrompt'</code>. A prompt can still be skipped for idle shells or other processes WezTerm considers safe. There is no custom window-close binding in this config.</p>
+<p class="note">Closing the last pane also removes its tab; closing the last tab also removes its window. See <a href="wezterm-architecture.html#lifetime">architecture: close scope and lifetime</a> and the <a href="wezterm-workflows.html#workflow-close">closing workflow</a>.</p>
+</div>
+</section>
+<section class="card blue" style="--accent:var(--blue)" aria-labelledby="panes">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="panes">Panes — split, focus, resize</h2><span class="badge">leader first</span></div>
+      <table aria-label="Pane shortcuts">
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>Shift+|</kbd></th><td>Split side by side; type the <strong>|</strong> symbol with Shift held.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>-</kbd></th><td>Split into an upper and lower pane.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>h</kbd> / <kbd>l</kbd></th><td>Focus left / right.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>j</kbd> / <kbd>k</kbd></th><td>Focus down / up.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>←</kbd> <kbd>↓</kbd> <kbd>↑</kbd> <kbd>→</kbd></th><td>Adjust the focused pane in that direction by 5 cells.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>f</kbd></th><td>Show pane labels; select one to focus.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>z</kbd></th><td>Zoom the current pane; repeat to restore the split view.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>x</kbd></th><td>Close the focused pane; requests confirmation. Closing the last pane also closes its tab.</td></tr>
+      </table>
+      <div class="body note">Each resize needs a fresh leader. “Horizontal split” in WezTerm means side by side; “vertical split” means upper/lower.</div>
+    </section>
+<section class="card green" style="--accent:var(--green)" aria-labelledby="tabs">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="tabs">Tabs &amp; windows</h2><span class="badge">zero-based tabs</span></div>
+      <table aria-label="Tab shortcuts">
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>c</kbd></th><td>New tab in the current pane's domain.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>b</kbd> / <kbd>n</kbd></th><td>Previous / next tab.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>0</kbd> … <kbd>9</kbd></th><td>Activate tab index 0–9. Index 0 is the first tab; index 1 is the second.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Tab</kbd></th><td>Next tab <span class="note">(built-in)</span>.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+Tab</kbd></th><td>Previous tab <span class="note">(built-in)</span>.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+n</kbd></th><td>New window <span class="note">(built-in; Cmd+n on macOS)</span>.</td></tr>
+      </table>
+      <div class="body note">Built-in number shortcuts keep their own convention: <kbd>Ctrl+Shift+1</kbd> selects the first tab, while <kbd>Leader</kbd> <kbd>1</kbd> selects the second. The tab bar is always visible at the bottom.</div>
+    </section>
+<section class="card mauve" style="--accent:var(--mauve)" aria-labelledby="launchers">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="launchers">Launchers &amp; workspaces</h2><span class="badge">leader first</span></div>
+      <table aria-label="Launcher shortcuts">
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>p</kbd></th><td>Open the launcher: profiles, tabs, and workspaces.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>w</kbd></th><td>Show the workspace selector.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>Shift+?</kbd></th><td>Open the command palette; type a command to find it.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+p</kbd></th><td>Command palette without the leader.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>r</kbd></th><td>Reload configuration.</td></tr>
+      </table>
+      <div class="body note">See <a href="wezterm-architecture.html#workspaces">architecture: workspaces</a> for grouping and persistence, or <a href="wezterm-workflows.html#workflow-projects">workflows: separate projects</a> for the task steps.</div>
+    </section>
+<section class="card teal" style="--accent:var(--teal)" aria-labelledby="clipboard">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="clipboard">Clipboard &amp; search</h2><span class="badge">system clipboard</span></div>
+      <table aria-label="Clipboard and search shortcuts">
+        <tr><th scope="row"><kbd>Ctrl+Shift+c</kbd></th><td>Copy the selected text.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+v</kbd></th><td>Paste clipboard contents into the focused application.</td></tr>
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>s</kbd></th><td>Search scrollback; selected text seeds the query.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+f</kbd></th><td>Open the same search without the leader.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+n</kbd> / <kbd>Ctrl+p</kbd></th><td>Next / previous match while the search UI is open.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+r</kbd></th><td>Cycle the search matching mode while searching.</td></tr>
+      </table>
+      <div class="body note">On macOS, built-in <kbd>Cmd+c</kbd>, <kbd>Cmd+v</kbd>, and <kbd>Cmd+f</kbd> remain available. A terminal application that captures mouse input may require holding Shift to select terminal text.</div>
+    </section>
+<section class="card yellow" style="--accent:var(--yellow)" aria-labelledby="copy-mode">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="copy-mode">Copy mode — keyboard selection</h2><span class="badge">built-in mode keys</span></div>
+      <table aria-label="Copy mode shortcuts">
+        <tr><th scope="row"><kbd>Leader</kbd> <kbd>[</kbd></th><td>Enter copy mode; subsequent keys work inside this mode.</td></tr>
+        <tr><th scope="row"><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> / arrows</th><td>Move left, down, up, right.</td></tr>
+        <tr><th scope="row"><kbd>v</kbd> / <kbd>Shift+v</kbd></th><td>Start a character / whole-line selection.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+v</kbd></th><td>Start a rectangular block selection.</td></tr>
+        <tr><th scope="row"><kbd>g</kbd> / <kbd>Shift+g</kbd></th><td>Go to the top / bottom of scrollback.</td></tr>
+        <tr><th scope="row"><kbd>PageUp</kbd> / <kbd>PageDown</kbd></th><td>Move through output one page at a time.</td></tr>
+        <tr><th scope="row"><kbd>y</kbd></th><td>Copy the selection and leave copy mode.</td></tr>
+        <tr><th scope="row"><kbd>q</kbd></th><td>Leave copy mode without copying.</td></tr>
+      </table>
+      <div class="body note">These are copy-mode bindings, not shell commands. Copy mode is useful when mouse selection is awkward or you want an exact line/block selection.</div>
+    </section>
+<section class="card peach" style="--accent:var(--peach)" aria-labelledby="everyday">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="everyday">Everyday controls</h2><span class="badge">no leader</span></div>
+      <table aria-label="Everyday shortcuts">
+        <tr><th scope="row"><kbd>Ctrl+Shift+=</kbd></th><td>Increase font size (the + key on a US keyboard).</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+-</kbd></th><td>Decrease font size.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+0</kbd></th><td>Reset font size to the configured value.</td></tr>
+        <tr><th scope="row"><kbd>Ctrl+Shift+r</kbd></th><td>Reload configuration now; automatic reload also watches saved edits.</td></tr>
+        <tr><th scope="row"><kbd>Alt+Enter</kbd></th><td>Toggle fullscreen <span class="note">(built-in; OS shortcuts can take precedence)</span>.</td></tr>
+      </table>
+      <div class="body note">The Ctrl+Shift shortcuts are explicitly configured across platforms. macOS built-in Cmd shortcuts remain enabled. Font-size shortcuts change the current window; edit <code>font_size</code> for the persistent default.</div>
+    </section></main>
+  <footer><span>Private home-directory overrides may change the shared settings.</span><span>Each sheet has its own focus; companion links open the other sheets.</span><span><a href="../docs/SETUP.md">Setup guide</a> · <a href="../README.md">Repository guide</a> · <a href="https://wezterm.org/config/keys.html">Official key reference</a></span></footer>
+</div>
+</body>
+</html>

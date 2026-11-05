@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Task recipes · finish work, arrange panes, find output, and manage projects">
+  <title>WezTerm — Workflows</title>
+  <style>
+    :root {
+      /* Catppuccin Macchiato; overlay2 keeps small notes readable on dark surfaces. */
+      --bg:#24273a;--surface:#1e2030;--overlay:#363a4f;--muted:#a5adcb;
+      --text:#cad3f5;--subtext:#b8c0e0;--lavender:#b7bdf8;--blue:#8aadf4;
+      --sky:#91d7e3;--teal:#8bd5ca;--green:#a6da95;--yellow:#eed49f;
+      --peach:#f5a97f;--red:#ed8796;--mauve:#c6a0f6;--pink:#f5bde6;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;padding:26px 28px 40px;background:var(--bg);color:var(--text);
+      font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+    .sheet{max-width:1700px;margin:auto}
+    header{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+      margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid var(--overlay)}
+    h1{margin:0;color:var(--lavender);font-size:24px;letter-spacing:-.6px}
+    .subtitle{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .meta{max-width:440px;color:var(--muted);text-align:right;font-size:12px}
+    .meta p{margin:3px 0}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:start}
+    .card{min-width:0;background:var(--surface);border:1px solid var(--overlay);border-radius:8px;overflow:hidden}
+    .full{grid-column:1/-1}
+    .wide{grid-column:span 2}
+    .card-header{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--overlay)}
+    h2{font-size:11px;text-transform:uppercase;letter-spacing:.85px;margin:0;color:var(--subtext)}
+    .dot{height:8px;width:8px;border-radius:50%;background:var(--accent,var(--lavender));flex:none}
+    .badge{margin-left:auto;font-size:10px;color:var(--muted);padding:1px 5px;border:1px solid var(--overlay);border-radius:4px;text-align:right}
+    .body{padding:11px 13px}
+    p{margin:0 0 9px}
+    p:last-child{margin-bottom:0}
+    .note{color:var(--muted);font-size:12px}
+    .important{color:var(--yellow)}
+    .label{color:var(--teal);font-weight:600}
+    table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:auto}
+    th,td{padding:6px 11px;vertical-align:top;text-align:left;overflow-wrap:anywhere}
+    th{font-weight:500;width:1%;white-space:nowrap;color:var(--text)}
+    td{color:var(--subtext)}
+    tr+tr>*{border-top:1px solid var(--overlay)}
+    .divider th{width:auto;white-space:normal;font-size:10px;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.6px;background:var(--bg);padding-top:5px;padding-bottom:5px}
+    kbd,code,pre{font-family:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace}
+    kbd{display:inline-block;padding:1px 5px;font-size:11px;line-height:1.65;white-space:nowrap;
+      border:1px solid var(--overlay);border-radius:4px;background:var(--bg);color:var(--text)}
+    .blue kbd{color:var(--blue)}.green kbd{color:var(--green)}.yellow kbd{color:var(--yellow)}
+    .mauve kbd{color:var(--mauve)}.peach kbd{color:var(--peach)}.teal kbd{color:var(--teal)}
+    .red kbd{color:var(--red)}
+    code{font-size:.9em;color:var(--sky);overflow-wrap:anywhere}
+    pre{font-size:11.5px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0;
+      background:var(--bg);padding:9px 11px;border-radius:5px;color:var(--text)}
+    pre code{font-size:inherit;color:inherit}
+    a{color:var(--blue);text-decoration-thickness:1px;text-underline-offset:3px}
+    a:hover{color:var(--sky)}a:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+    ol,ul{padding-left:20px;margin:0}li+li{margin-top:6px}
+    .leader-layout{display:grid;grid-template-columns:1fr 1fr;gap:10px 25px}
+    .leader-layout strong{color:var(--lavender)}
+    .steps kbd{margin:0 1px}
+    .settings th{white-space:normal;width:35%}
+    .locations th{white-space:normal;width:26%}
+    footer{display:flex;justify-content:space-between;gap:15px;margin-top:18px;padding-top:12px;
+      border-top:1px solid var(--overlay);color:var(--muted);font-size:11px}
+    @media(max-width:1180px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wide{grid-column:1/-1}
+      th{white-space:normal}header{align-items:flex-start}.meta{max-width:330px}
+    }
+    @media(max-width:700px){
+      body{padding:18px 12px 28px}.grid{grid-template-columns:minmax(0,1fr);gap:12px}
+      header,footer{display:block}.meta{max-width:none;text-align:left;margin-top:12px}
+      h1{font-size:23px}.leader-layout{grid-template-columns:minmax(0,1fr)}
+      th{width:38%;white-space:normal}th,td{padding:7px 10px}.badge{font-size:9px}
+      footer>span{display:block;margin-top:6px}
+    }
+    @media print{
+      :root{--bg:#fff;--surface:#fff;--overlay:#ccc;--muted:#555;--text:#111;--subtext:#222;
+        --lavender:#333;--blue:#134a83;--sky:#134a83;--teal:#215c42;--green:#215c42;
+        --yellow:#664400;--peach:#664400;--red:#7b1725;--mauve:#50316b;--pink:#50316b}
+      @page{margin:10mm}
+      body{padding:0;font-size:10px}header{margin-bottom:10px;padding-bottom:9px}h1{font-size:18px}
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.wide,.full{grid-column:1/-1}
+      .card{break-inside:avoid;box-shadow:none;border-radius:4px}.card-header{padding:6px 9px}
+      h2{font-size:9px}.body{padding:8px 10px}table{font-size:10px}th,td{padding:4px 8px}
+      th{width:38%;white-space:normal}.full table{table-layout:fixed}.full table th{width:48%}
+      kbd{font-size:9px;background:#f5f5f5;color:#111!important;border-color:#aaa}
+      .note,.subtitle,.meta{font-size:9px}pre{font-size:9px;border:1px solid #ddd;padding:7px}
+      .dot{background:#777}footer{display:none}.important{color:#664400}
+      a{color:#111;text-decoration:none}p{margin-bottom:6px}
+    }
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+    nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 18px;font-size:12px}
+    nav a[aria-current="page"]{color:var(--teal);font-weight:700}
+    .scope-table{table-layout:fixed}.scope-table th,.full .scope-table th{width:24%;white-space:normal}
+    .concepts th{width:28%;white-space:normal}
+    .tree{margin:0}.tree ul{list-style:none;padding-left:20px;border-left:1px solid var(--overlay)}
+    .tree li{padding:5px 0 5px 8px}.tree strong{color:var(--lavender)}
+    figcaption{margin-top:9px;color:var(--muted);font-size:12px}
+    .intro{margin:0 0 18px;color:var(--subtext);max-width:100ch}
+    @media print{nav{display:none}.intro{font-size:10px;margin-bottom:10px}figcaption{font-size:9px}}
+  </style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div><h1>WezTerm — Workflows</h1><p class="subtitle">Task recipes · finish work, arrange panes, find output, and manage projects</p></div>
+    <div class="meta"><p>Linux · Windows · macOS</p><p>Catppuccin Macchiato · offline · printable</p><p>Shared config targets WezTerm 20240203-110809-5046fc22 or newer.</p></div>
+  </header>
+  <nav aria-label="Cheatsheets"><a href="wezterm-cheatsheet.html">Overview</a> <a href="wezterm-keymap.html">Keymap</a> <a href="wezterm-workflows.html" aria-current="page">Workflows</a> <a href="wezterm-architecture.html">Architecture</a></nav>
+  <p class="intro">Choose a task, then follow its steps. <strong>Leader</strong> means Escape followed by the next key. The complete shortcut catalog is in <a href="wezterm-keymap.html">keymap</a>; the object model and persistence rules are in <a href="wezterm-architecture.html">architecture</a>.</p>
+  <main class="grid"><section class="card full" style="--accent:var(--red)" aria-labelledby="workflow-close">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-close">Finish work and close the intended scope</h2></div>
+  <div class="body">
+<ol class="steps">
+  <li>Save changes in the applications you want to stop. Focus the pane or tab you intend to close; use <kbd>Leader</kbd> <kbd>f</kbd> if the active pane is unclear.</li>
+  <li>For <strong>one pane</strong>, press <kbd>Esc</kbd> → <kbd>x</kbd>. To finish a shell normally instead, enter <code>exit</code> at its prompt. Exiting a nested shell or an editor can return to the parent program rather than remove the pane.</li>
+  <li>For an <strong>entire tab</strong>, press <kbd>Ctrl+Shift+W</kbd>, or <kbd>Cmd+W</kbd> on macOS. This closes every split in that tab, not just the focused pane.</li>
+  <li>For the <strong>whole window</strong>, click its native close button. Check all its tabs first. On Windows, <kbd>Alt+F4</kbd> requests the same window-level close.</li>
+  <li>Respond to any confirmation prompt. A safe/idle shell may close immediately even though confirmation is enabled.</li>
+</ol>
+<p class="note" style="margin-top:10px">In the default local setup, closing sessions ends their associated terminal programs; it is not a detach/save operation. To put a project aside while it continues running, switch workspaces instead. See <a href="wezterm-architecture.html#lifetime">lifetime and persistence</a> for remote/separate-mux considerations.</p>
+</div>
+</section>
+<section class="card blue" style="--accent:var(--blue)" aria-labelledby="workflow-split">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-split">Workflow — editor + shell + logs</h2></div>
+      <div class="body steps">
+        <ol>
+          <li>Open an editor in the first pane.</li>
+          <li><kbd>Leader</kbd> <kbd>Shift+|</kbd> creates a pane to its right; run your shell commands there.</li>
+          <li><kbd>Leader</kbd> <kbd>-</kbd> splits that pane above/below; run a log watcher in the new pane.</li>
+          <li>Focus with <kbd>Leader</kbd> <kbd>h/j/k/l</kbd> or select a pane using <kbd>Leader</kbd> <kbd>f</kbd>.</li>
+          <li><kbd>Leader</kbd> <kbd>z</kbd> enlarges a pane temporarily. Repeat to return to the layout.</li>
+        </ol>
+      </div>
+    </section>
+<section class="card teal" style="--accent:var(--teal)" aria-labelledby="workflow-copy">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-copy">Workflow — find &amp; copy output</h2></div>
+      <div class="body steps">
+        <ol>
+          <li><kbd>Leader</kbd> <kbd>s</kbd> opens search. Enter a term, then navigate matches with <kbd>Ctrl+n</kbd> / <kbd>Ctrl+p</kbd>.</li>
+          <li>For precise keyboard selection, enter copy mode with <kbd>Leader</kbd> <kbd>[</kbd>.</li>
+          <li>Move to the text; press <kbd>v</kbd> for characters or <kbd>Shift+v</kbd> for whole lines, then extend the selection.</li>
+          <li><kbd>y</kbd> copies and leaves copy mode. Paste with <kbd>Ctrl+Shift+v</kbd>, or <kbd>Cmd+v</kbd> on macOS.</li>
+        </ol>
+        <p class="note" style="margin-top:9px">Scrollback is limited by <code>scrollback_lines</code>; increasing it retains more output per pane and uses more memory.</p>
+      </div>
+    </section>
+<section class="card mauve" style="--accent:var(--mauve)" aria-labelledby="workflow-projects">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-projects">Workflow — separate projects</h2></div>
+      <div class="body steps">
+        <ol>
+          <li><kbd>Leader</kbd> <kbd>w</kbd> opens the workspace selector. Choose an existing workspace or its create-workspace entry.</li>
+          <li>The create entry assigns a name automatically. From a pane in that workspace, run <code>wezterm cli rename-workspace project</code> to choose a meaningful name.</li>
+          <li><kbd>Leader</kbd> <kbd>c</kbd> adds a tab. Use <kbd>Leader</kbd> <kbd>b</kbd> / <kbd>n</kbd> to switch tabs.</li>
+          <li><kbd>Leader</kbd> <kbd>p</kbd> shows profiles, tabs, and workspaces together.</li>
+        </ol>
+        <p class="note" style="margin-top:9px">Workspace names and layouts belong to the running mux. Use a separate session manager if you need explicit persistence or program restoration.</p>
+      </div>
+    </section>
+<section class="card " style="--accent:var(--green)" aria-labelledby="workflow-profile">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-profile">Use a machine-only launch profile</h2></div>
+  <div class="body">
+<ol class="steps">
+  <li>Install the shared config using the <a href="../docs/SETUP.md">OS setup guide</a>.</li>
+  <li>Copy the tracked, commented <code>wezterm.local.lua</code> into your home directory beside the active <code>.wezterm.lua</code>. Keep an existing private file rather than replacing it.</li>
+  <li>Edit only the installed copy. Add a <code>config.launch_menu</code> entry guarded by the platform and the availability of its local initialization script.</li>
+  <li>Reload with <kbd>Ctrl+Shift+r</kbd>, or <kbd>Cmd+r</kbd> on macOS. Open <kbd>Leader</kbd> <kbd>p</kbd> and select the profile.</li>
+</ol>
+<p class="note" style="margin-top:10px">A missing local file is allowed. The repository copy is a public no-op example. Private paths and commands belong outside the checkout; a machine without the required tools should omit that launch entry.</p>
+</div>
+</section>
+<section class="card " style="--accent:var(--yellow)" aria-labelledby="workflow-exit">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-exit">A process exited but its pane stayed open</h2></div>
+  <div class="body">
+<ol>
+  <li>Read the exit message and retained output. The shared <code>exit_behavior = 'CloseOnCleanExit'</code> keeps failed processes visible for diagnosis.</li>
+  <li>Fix the command or its local profile if required. A held pane does not mean its command is still running.</li>
+  <li>Dismiss that pane with <kbd>Leader</kbd> <kbd>x</kbd>, then open a new tab/pane or select the corrected profile.</li>
+</ol>
+<p class="note" style="margin-top:10px">Interrupting an application is different from closing its terminal. At a shell, <kbd>Ctrl+C</kbd> normally interrupts foreground work and leaves the shell open; it does not replace the close commands.</p>
+</div>
+</section>
+<section class="card " style="--accent:var(--peach)" aria-labelledby="workflow-update">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-update">Update settings without replacing private overrides</h2></div>
+  <div class="body">
+<ol>
+  <li>For a shared update, follow <a href="../docs/SETUP.md#update-the-shared-config">the update instructions</a>: pull the checkout and copy its <code>.wezterm.lua</code> to the active home-directory location.</li>
+  <li>Leave your installed <code>wezterm.local.lua</code> in place. Edit personal font/shell/leader preferences there.</li>
+  <li>Reload and check for configuration errors. Initial rows/columns affect new windows; they do not resize an existing window on reload.</li>
+</ol>
+<p class="note" style="margin-top:10px">Creating the optional local file for the first time may require a manual reload. Existing files are watched for edits. Changing settings does not restart already running applications.</p>
+</div>
+</section>
+<section class="card full" style="--accent:var(--peach)" aria-labelledby="cli">
+      <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="cli">Command-line reference</h2><span class="badge">use an installed wezterm executable</span></div>
+      <table aria-label="WezTerm command-line commands">
+        <tr><th scope="row"><code>wezterm --config-file /path/to/.wezterm.lua show-keys --lua</code></th><td>Load that configuration and inspect its effective bindings, including defaults.</td></tr>
+        <tr><th scope="row"><code>wezterm --config-file /path/to/.wezterm.lua ls-fonts</code></th><td>Inspect actual font resolution and fallbacks.</td></tr>
+        <tr><th scope="row"><code>wezterm start --cwd /path/to/project</code></th><td>Open a terminal in a chosen directory.</td></tr>
+        <tr><th scope="row"><code>wezterm start -- program arg</code></th><td>Run a specific program instead of the default shell. Use native quoting for your shell.</td></tr>
+        <tr><th scope="row"><code>wezterm cli list</code></th><td>List windows, tabs, and panes in a running local instance.</td></tr>
+        <tr><th scope="row"><code>wezterm cli split-pane --right</code><br><code>wezterm cli split-pane --bottom</code></th><td>Create a right-side / lower pane from inside WezTerm.</td></tr>
+        <tr><th scope="row"><code>wezterm cli spawn --new-window --workspace project</code></th><td>Create a window in a named workspace in the running mux.</td></tr>
+        <tr><th scope="row"><code>wezterm cli rename-workspace project</code></th><td>Rename the workspace containing the current pane.</td></tr>
+      </table>
+      <div class="body note">CLI pane commands can target another pane with <code>--pane-id ID</code>. A workspace is not a guarantee of process persistence; closing its multiplexer ends the associated processes.</div>
+    </section></main>
+  <footer><span>Private home-directory overrides may change the shared settings.</span><span>Each sheet has its own focus; companion links open the other sheets.</span><span><a href="../docs/SETUP.md">Setup guide</a> · <a href="../README.md">Repository guide</a> · <a href="https://wezterm.org/config/keys.html">Official key reference</a></span></footer>
+</div>
+</body>
+</html>

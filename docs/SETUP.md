@@ -224,8 +224,18 @@ an error, so inspect diagnostics as well as the command's exit status.
 Expect Catppuccin Macchiato and a bottom tab bar. Press **Escape**, release it,
 then **c** to open a tab, or **p** to open the launcher. A private menu entry appears
 only if your local file adds it. A single Escape acts as the leader; double Escape
-sends one Escape to an application. See the
-[HTML cheatsheet](../cheatsheets/wezterm-cheatsheet.html) for other workflows.
+sends one Escape to an application. Keep these separate references handy:
+
+- [Keymap](../cheatsheets/wezterm-keymap.html): shortcuts, including the
+  [pane/tab/window close actions](../cheatsheets/wezterm-keymap.html#closing).
+- [Workflows](../cheatsheets/wezterm-workflows.html): step-by-step tasks, including
+  [finishing work and closing the right scope](../cheatsheets/wezterm-workflows.html#workflow-close).
+- [Architecture](../cheatsheets/wezterm-architecture.html): the pane/tab/window
+  hierarchy, workspaces, domains, profiles, confirmation, and persistence.
+
+Open these HTML files in a browser from your checkout; each has its own inline
+styles and can be printed or read offline. The
+[cheatsheet overview](../cheatsheets/wezterm-cheatsheet.html) links all three.
 
 ## Update the shared config
 
