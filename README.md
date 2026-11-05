@@ -49,7 +49,7 @@ tradeoffs, and useful alternatives. The main groups are:
 - Theme, transparency, inactive-pane dimming, and rendering frame-rate limits.
 - Window controls, padding, initial grid size, and font-resize behavior.
 - Tab-bar position, style, title width, and zero-based indices.
-- Cursor style, blink interval, scrollback, bell, and close behavior.
+- Cursor style, blink interval, scrollbar, scrollback, bell, and close behavior.
 - Native shells, platform-specific launch choices, leader keys, and shortcuts.
 
 The shared config leaves `default_prog` unset, allowing WezTerm to choose its
@@ -123,6 +123,13 @@ explains lifetime, close cascades, and how remote/persistent mux setups differ.
 
 The complete shortcut catalog belongs to the keymap, task sequences to workflows,
 and object relationships to architecture. Local overrides may change the defaults.
+
+The scrollbar is enabled in the window's right-hand padding. Use
+`Shift+PageUp` / `Shift+PageDown` for quick paging, or see
+[scrolling keys](cheatsheets/wezterm-keymap.html#scrolling) and the
+[history workflow](cheatsheets/wezterm-workflows.html#workflow-scroll) for copy-mode
+jumps and compact Mac keyboard equivalents. The active pane retains 10,000
+scrollback lines by default; a local override can change that limit.
 
 ## Checks
 

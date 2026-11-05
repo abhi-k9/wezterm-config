@@ -138,6 +138,20 @@
         </ol>
       </div>
     </section>
+<section class="card teal" style="--accent:var(--teal)" aria-labelledby="workflow-scroll">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-scroll">Read long output and scroll fast</h2></div>
+  <div class="body steps">
+    <ol>
+      <li>Focus the pane containing the output. Its scrollbar is at the window's right edge; drag the thumb to move through its history.</li>
+      <li>For quick keyboard paging, hold <kbd>Shift</kbd> and press <kbd>PageUp</kbd> / <kbd>PageDown</kbd>. On a compact Mac keyboard, use <kbd>Shift+Fn+↑</kbd> / <kbd>Shift+Fn+↓</kbd>.</li>
+      <li>For long jumps without page keys, enter copy mode with <kbd>Esc</kbd> → <kbd>[</kbd>. Use <kbd>Ctrl+b</kbd> / <kbd>Ctrl+f</kbd> for pages, or <kbd>Ctrl+u</kbd> / <kbd>Ctrl+d</kbd> for half-pages.</li>
+      <li>Press <kbd>g</kbd> for the oldest retained output, or <kbd>Shift+g</kbd> for the newest. Press <kbd>q</kbd> to leave copy mode.</li>
+      <li>To resume following live output, jump to the newest output before leaving copy mode, or type at the shell prompt: <code>scroll_to_bottom_on_input = true</code> returns the viewport to the bottom on input.</li>
+    </ol>
+    <p class="note" style="margin-top:10px">For a specific error, use search instead of repeated paging: <kbd>Leader</kbd> <kbd>s</kbd>, then <kbd>Ctrl+n</kbd> / <kbd>Ctrl+p</kbd> between matches. The complete bindings are in <a href="wezterm-keymap.html#scrolling">keymap: scrolling</a>.</p>
+    <p class="note">If the bar is missing after updating, copy the new shared <code>.wezterm.lua</code> into your active home-directory location and reload. Check for a local <code>enable_scroll_bar = false</code> override. History limits and full-screen app behavior are covered in <a href="wezterm-architecture.html#scrollback">architecture: scrollback</a>.</p>
+  </div>
+</section>
 <section class="card teal" style="--accent:var(--teal)" aria-labelledby="workflow-copy">
       <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-copy">Workflow — find &amp; copy output</h2></div>
       <div class="body steps">

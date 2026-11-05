@@ -90,6 +90,11 @@ config.default_cursor_style = 'SteadyBlock' -- Also: BlinkingBlock/SteadyBar/Bli
 config.cursor_blink_rate = 500 -- Milliseconds; only relevant for blinking styles.
 -- Terminal apps can request their own cursor style, overriding this default.
 config.scrollback_lines = 10000 -- History retained per pane; more uses more RAM.
+-- WezTerm hides the scrollbar by default. Show it at the window's right edge;
+-- it uses the existing right padding and tracks the active pane's scrollback.
+-- Set false locally for a keyboard-only/minimal view. Shift+PageUp/PageDown
+-- scroll by a page even without the bar; copy mode offers larger history jumps.
+config.enable_scroll_bar = true
 config.scroll_to_bottom_on_input = true -- Typing returns a scrolled pane to the prompt.
 config.audible_bell = 'Disabled' -- Silence BEL; enable with 'SystemBeep'.
 -- Optional visual alternative (flash the cursor background on BEL):

@@ -183,6 +183,21 @@
       </table>
       <div class="body note">On macOS, built-in <kbd>Cmd+c</kbd>, <kbd>Cmd+v</kbd>, and <kbd>Cmd+f</kbd> remain available. A terminal application that captures mouse input may require holding Shift to select terminal text.</div>
     </section>
+<section class="card blue" style="--accent:var(--blue)" aria-labelledby="scrolling">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="scrolling">Scroll quickly — keyboard</h2><span class="badge">built-in bindings</span></div>
+  <table aria-label="Fast scrollback shortcuts">
+    <tr class="divider"><th colspan="2">Normal terminal — no leader</th></tr>
+    <tr><th scope="row"><kbd>Shift+PageUp</kbd></th><td>Scroll up one page in the active pane.</td></tr>
+    <tr><th scope="row"><kbd>Shift+PageDown</kbd></th><td>Scroll down one page toward the latest output.</td></tr>
+    <tr class="divider"><th colspan="2">Copy mode — enter with Leader, [</th></tr>
+    <tr><th scope="row"><kbd>Ctrl+b</kbd> / <kbd>Ctrl+f</kbd></th><td>Up / down one page. Plain PageUp / PageDown also work in this mode.</td></tr>
+    <tr><th scope="row"><kbd>Ctrl+u</kbd> / <kbd>Ctrl+d</kbd></th><td>Up / down half a page.</td></tr>
+    <tr><th scope="row"><kbd>g</kbd> / <kbd>Shift+g</kbd></th><td>Jump to the oldest / newest retained scrollback.</td></tr>
+    <tr><th scope="row"><kbd>q</kbd></th><td>Leave copy mode without copying.</td></tr>
+  </table>
+  <div class="body note">On compact Mac keyboards, <kbd>Fn+↑</kbd> / <kbd>Fn+↓</kbd> send PageUp / PageDown. Add Shift for normal terminal paging; Ctrl+b / Ctrl+f need no Fn in copy mode. Plain Ctrl+PageUp / Ctrl+PageDown switch tabs, so use the Shift paging bindings above.</div>
+  <div class="body note">The shared scrollbar occupies the window's right-hand padding. See <a href="wezterm-workflows.html#workflow-scroll">the scrolling workflow</a> for returning to live output and <a href="wezterm-architecture.html#scrollback">architecture: retained history</a> for limits and full-screen applications.</div>
+</section>
 <section class="card yellow" style="--accent:var(--yellow)" aria-labelledby="copy-mode">
       <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="copy-mode">Copy mode — keyboard selection</h2><span class="badge">built-in mode keys</span></div>
       <table aria-label="Copy mode shortcuts">

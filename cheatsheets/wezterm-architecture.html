@@ -188,6 +188,15 @@
 <p class="note">The shared menu offers Windows shell choices only on Windows. Private machine-only launch entries belong in the installed home-directory local config and should check platform/tool availability.</p>
 </div>
 </section>
+<section class="card " style="--accent:var(--sky)" aria-labelledby="scrollback">
+  <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="scrollback">Scrollback is retained terminal output</h2></div>
+  <div class="body">
+    <p>Each pane has its own output history. The shared config retains <code>10,000</code> scrollback lines per pane; once older lines are discarded, scrolling or search cannot recover them. Increasing <code>scrollback_lines</code> retains more future history and uses more memory.</p>
+    <p>The scrollbar is a view control for the active pane's history, drawn in the window's right-hand padding. It is enabled here with <code>enable_scroll_bar = true</code>; WezTerm's default is to hide it. Hiding it locally does not disable keyboard scrolling.</p>
+    <p>Full-screen programs such as editors and pagers often use an alternate screen and their own navigation. Their displayed content may not be part of normal terminal scrollback. Scrolling terminal history does not replace the application's own scrolling.</p>
+    <p class="note">Scrollback is not a durable log or saved session. Use application logging when you need output to survive closing the pane. See <a href="wezterm-workflows.html#workflow-scroll">the scrolling workflow</a> for reading history and returning to live output.</p>
+  </div>
+</section>
 <section class="card wide" style="--accent:var(--peach)" aria-labelledby="configuration">
   <div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="configuration">Configuration files and live state</h2></div>
   <div class="body">
