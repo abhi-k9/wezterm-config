@@ -1,4 +1,5 @@
 """Configuration behavior checks using WezTerm's real Lua and schema APIs."""
+import itertools
 import json
 import os
 from pathlib import Path
@@ -179,7 +180,7 @@ return ok and config or w.config_builder()
         toggle = result['keys'][1]
         self.assertEqual(toggle['key'], 'F11')
         self.assertEqual(toggle['action']['EmitEvent'], 'toggle-input-mode')
-        self.assertEqual(len(result['keys']), 3)
+        self.assertEqual(len(result['keys']), 4)
 
     def test_legacy_overrides_cannot_silently_break_app_mode(self):
         self.probe(local='''return function(config)
@@ -199,29 +200,68 @@ return ok and config or w.config_builder()
                 self.probe(local=local, expected_error=expected)
         self.probe(read_failure=True, expected_error='permission denied')
 
-    def test_app_mode_reserves_only_toggle_fullscreen_and_paste(self):
+    def test_app_mode_defaults_reserve_only_toggle_fullscreen_and_clipboard(self):
         for triple in ['x86_64-unknown-linux-gnu', 'aarch64-apple-darwin',
                        'x86_64-pc-windows-msvc']:
             with self.subTest(triple=triple):
                 result = self.probe(triple=triple)
                 self.assertTrue(result['defaults_disabled'])
                 self.assertIs(result['leader'], False)
-                self.assertEqual(len(result['keys']), 4 if 'apple' in triple else 3)
+                self.assertEqual(len(result['keys']), 6 if 'apple' in triple else 4)
                 self.assertEqual(result['keys'][0], {
                     'key': 'Enter', 'mods': 'ALT', 'action': 'ToggleFullScreen'})
                 self.assertEqual(result['keys'][1]['key'], 'F12')
                 self.assertEqual(set(result['keys'][1]['mods'].split('|')), {'CTRL', 'SHIFT'})
                 self.assertEqual(result['keys'][1]['action']['EmitEvent'], 'toggle-input-mode')
                 self.assertEqual(result['keys'][2], {
+                    'key': 'C', 'mods': 'CTRL|SHIFT', 'action': {'CopyTo': 'Clipboard'}})
+                paste = next(entry for entry in result['keys'] if entry['key'] == 'V')
+                self.assertEqual(paste, {
                     'key': 'V', 'mods': 'CTRL|SHIFT', 'action': {'PasteFrom': 'Clipboard'}})
                 if 'apple' in triple:
-                    self.assertEqual(result['keys'][3], {
-                        'key': 'v', 'mods': 'SUPER', 'action': {'PasteFrom': 'Clipboard'}})
-                # Ctrl+v remains an application key; WEZ tables fall through
-                # to the global paste binding instead of maintaining duplicates.
-                for table in result['key_tables'].values():
-                    self.assertFalse(any('PasteFrom' in entry['action'] for entry in table
-                                         if isinstance(entry['action'], dict)))
+                    self.assertEqual([entry for entry in result['keys'] if entry['mods'] == 'SUPER'], [
+                        {'key': 'c', 'mods': 'SUPER', 'action': {'CopyTo': 'Clipboard'}},
+                        {'key': 'v', 'mods': 'SUPER', 'action': {'PasteFrom': 'Clipboard'}}])
+
+    def test_app_clipboard_switches_preserve_wez_controls_and_application_keys(self):
+        for triple in ['x86_64-unknown-linux-gnu', 'aarch64-apple-darwin',
+                       'x86_64-pc-windows-msvc']:
+            for enabled, copy, paste in itertools.product([False, True], repeat=3):
+                with self.subTest(triple=triple, enabled=enabled, copy=copy, paste=paste):
+                    values = [str(value).lower() for value in (enabled, copy, paste)]
+                    local = '''return function(config, wezterm, app_shortcuts)
+                      app_shortcuts.enabled = %s
+                      app_shortcuts.copy = %s
+                      app_shortcuts.paste = %s
+                    end''' % tuple(values)
+                    result = self.probe(triple=triple, local=local)
+                    global_keys = {(entry['key'], entry['mods']) for entry in result['keys']}
+                    expected = {('Enter', 'ALT'), ('F12', 'CTRL|SHIFT')}
+                    if enabled and copy:
+                        expected.add(('C', 'CTRL|SHIFT'))
+                        if 'apple' in triple:
+                            expected.add(('c', 'SUPER'))
+                    if enabled and paste:
+                        expected.add(('V', 'CTRL|SHIFT'))
+                        if 'apple' in triple:
+                            expected.add(('v', 'SUPER'))
+                    self.assertEqual(global_keys, expected)
+                    wez = {(entry['key'], entry['mods']): entry['action']
+                           for entry in result['key_tables']['wezterm']}
+                    self.assertEqual(wez[('C', 'CTRL|SHIFT')], {'CopyTo': 'Clipboard'})
+                    self.assertEqual(wez[('V', 'CTRL|SHIFT')], {'PasteFrom': 'Clipboard'})
+                    if 'apple' in triple:
+                        self.assertEqual(wez[('c', 'SUPER')], {'CopyTo': 'Clipboard'})
+                        self.assertEqual(wez[('v', 'SUPER')], {'PasteFrom': 'Clipboard'})
+                    # Ctrl+c remains interrupt; Ctrl+v retains editor/shell behavior.
+                    for bindings in [result['keys'], *result['key_tables'].values()]:
+                        self.assertFalse(any(entry['key'].lower() in ('c', 'v')
+                                             and entry['mods'] == 'CTRL' for entry in bindings))
+
+    def test_app_shortcut_options_require_booleans(self):
+        self.probe(local='''return function(config, wezterm, app_shortcuts)
+          app_shortcuts.enabled = 'false'
+        end''', expected_error='app_shortcuts.enabled must be true or false')
 
     def test_toggle_is_persistent_and_exits_overlays_on_return(self):
         actions = self.probe()['toggle_actions']
@@ -259,13 +299,14 @@ return ok and config or w.config_builder()
         self.assertIn('WORKSPACES', keys['w']['action']['ShowLauncherArgs']['flags'])
         self.assertEqual(keys['[']['action'], 'ActivateCopyMode')
 
-    def test_mac_copy_and_close_are_wez_only_but_paste_is_global(self):
+    def test_mac_close_is_wez_only_and_clipboard_extensions_are_global(self):
         result = self.probe(triple='aarch64-apple-darwin')
         cmd = {entry['key']: entry for entry in result['key_tables']['wezterm']
                if entry['mods'] == 'SUPER'}
         self.assertTrue(cmd['w']['action']['CloseCurrentTab']['confirm'])
         self.assertEqual(cmd['c']['action']['CopyTo'], 'Clipboard')
         self.assertEqual([entry for entry in result['keys'] if entry['mods'] == 'SUPER'], [
+            {'key': 'c', 'mods': 'SUPER', 'action': {'CopyTo': 'Clipboard'}},
             {'key': 'v', 'mods': 'SUPER', 'action': {'PasteFrom': 'Clipboard'}}])
 
 

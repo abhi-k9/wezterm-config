@@ -117,7 +117,7 @@
 <section class="card " style="--accent:var(--blue)" aria-labelledby="workflow-wez"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-wez">Temporarily use outer controls</h2></div><div class="body">
 <ol class="steps">
 <li>Toggle Ctrl+Shift+F12 and check for WEZ in the outer tab bar.</li>
-<li>Use fonts/copy directly, or press Ctrl+Shift+Space, release, then p for the launcher, c for an outer tab, or another prefix command.</li>
+<li>Use fonts/search directly, or press Ctrl+Shift+Space, release, then p for the launcher, c for an outer tab, or another prefix command.</li>
 <li>Return to APP with the same mode toggle. Pending command tables and copy/search UI are released.</li>
 <li>Keep Zellij’s lock state as needed; switching WezTerm mode never sends it a plain F12.</li>
 </ol><p class="note" style="margin-top:10px">The mode covers all outer tabs/panes in this GUI window. Another native window has an independent mode and starts APP.</p>
@@ -133,10 +133,10 @@
 <section class="card " style="--accent:var(--yellow)" aria-labelledby="workflow-copy"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-copy">Copy and paste at the right layer</h2></div><div class="body">
 <ol class="steps">
 <li>For inner text, use Neovim’s configured clipboard provider or Zellij’s copy operation. OSC52 can deliver clipboard writes to the host with a suitable setup.</li>
-<li>Paste from the host clipboard with Ctrl+Shift+v in APP or WEZ; Cmd+v also works on macOS. Focus the intended Zellij pane and enter Neovim Insert mode first when pasting into an editor buffer.</li>
-<li>For an outer-terminal selection, copy in WEZ with Ctrl+Shift+c / Cmd+c. Prefix [ offers keyboard selection of outer history.</li>
-<li>If you entered WEZ to copy, return APP. Test clipboard behavior with non-sensitive text along any SSH/WSL path you use.</li>
-</ol><p class="note" style="margin-top:10px">Plain Ctrl+v keeps its application behavior; the paste shortcut is Ctrl+Shift+v. This config does not configure Neovim’s clipboard provider. A WezTerm selection covers the rendered outer terminal; use the editor for a semantic buffer selection.</p>
+<li>With the default APP extensions, paste from the host clipboard with Ctrl+Shift+v (Cmd+v on macOS). Focus the intended Zellij pane and enter Neovim Insert mode first when pasting into an editor buffer.</li>
+<li>To copy rendered text, make a WezTerm selection, then Ctrl+Shift+c / Cmd+c works directly in APP by default. Hold Shift while dragging if Zellij/Neovim captures the mouse. WEZ prefix [ offers keyboard selection of outer history.</li>
+<li>If an APP clipboard extension is disabled, enter WEZ for that action, then return APP. Test clipboard behavior with non-sensitive text along any SSH/WSL path you use.</li>
+</ol><p class="note" style="margin-top:10px">The <a href="../docs/INPUT.md#configure-app-extensions">APP extension switches</a> control copy/paste separately or together. Plain Ctrl+c remains interrupt; Ctrl+v keeps its application behavior. This config does not configure Neovim’s clipboard provider. A WezTerm selection covers the rendered outer terminal; use the editor for a semantic buffer selection.</p>
 </div></section>
 <section class="card " style="--accent:var(--green)" aria-labelledby="workflow-split"><div class="card-header"><span class="dot" aria-hidden="true"></span><h2 id="workflow-split">Arrange editor, shell, and logs in Zellij</h2></div><div class="body">
 <ol class="steps">

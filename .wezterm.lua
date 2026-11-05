@@ -8,7 +8,8 @@ local is_macos = wezterm.target_triple:find('apple') ~= nil
 -- Edit these values directly, or override them in wezterm.local.lua beside
 -- the installed config. The repository's local file is a tracked public
 -- example; keep private overrides in the installed copy outside this checkout.
--- That optional local file is applied LAST.
+-- Local overrides follow the shared defaults; APP clipboard options are then
+-- used to finish building the global shortcuts.
 -- Reference: https://wezterm.org/config/files.html
 
 -- Fonts --------------------------------------------------------------------
@@ -131,20 +132,49 @@ end
 -- The launcher also lists tabs and workspaces even when this menu is empty.
 
 -- Input routing: WezTerm -> Zellij -> Neovim --------------------------------
--- APP is the default in each window and after a config reload. Fullscreen,
--- the mode toggle, and host-clipboard paste are reserved. Other input follows the
--- normal terminal path to the application (subject to OS/terminal encoding).
+-- APP is the default in each window and after a config reload. Fullscreen and
+-- the mode toggle are always reserved. Optional clipboard shortcuts below also
+-- work in APP. Other input follows the normal terminal path to the application
+-- (subject to OS/terminal encoding).
 -- Never set a native config.leader: it is checked BEFORE key tables and would
 -- intercept Escape or another prefix even in APP mode.
 config.disable_default_key_bindings = true
 config.status_update_interval = 200 -- Milliseconds; refresh the small mode badge.
 
+-- APP shortcut extensions --------------------------------------------------
+-- These are ordinary Lua options, not WezTerm config fields. Edit true/false
+-- here, or accept a third argument in the installed local function and set
+-- app_shortcuts.enabled/copy/paste there. Existing two-argument profiles work.
+local app_shortcuts = {
+  -- Master switch: false leaves only fullscreen and the mode toggle in APP.
+  -- WEZ keeps its clipboard shortcuts regardless of these three options.
+  enabled = true,
+  -- Ctrl+Shift+c (also Cmd+c on macOS) copies a WezTerm selection to the host
+  -- clipboard. Select text first; this does not yank a Neovim buffer selection.
+  -- Plain Ctrl+c still reaches the application to interrupt a command.
+  copy = true,
+  -- Ctrl+Shift+v (also Cmd+v on macOS) pastes the host clipboard into the focused
+  -- terminal/Zellij pane without changing modes. Plain Ctrl+v remains an app key.
+  paste = true,
+}
+
 local function key(key_name, mods, action)
   return { key = key_name, mods = mods, action = action }
 end
 
+local function add_clipboard_bindings(keys, enable_copy, enable_paste)
+  if enable_copy then
+    table.insert(keys, key('C', 'CTRL|SHIFT', act.CopyTo 'Clipboard'))
+    if is_macos then table.insert(keys, key('c', 'SUPER', act.CopyTo 'Clipboard')) end
+  end
+  if enable_paste then
+    table.insert(keys, key('V', 'CTRL|SHIFT', act.PasteFrom 'Clipboard'))
+    if is_macos then table.insert(keys, key('v', 'SUPER', act.PasteFrom 'Clipboard')) end
+  end
+end
+
 -- A single global event toggles the current GUI window. Named tables fall
--- through to these globals, so fullscreen, the toggle, and paste work in both modes.
+-- through to the global fullscreen, toggle, and enabled APP clipboard shortcuts.
 -- Clearing the stack also exits a pending command prefix. CopyMode Close is
 -- harmless outside the copy/search UI and releases that UI when returning APP.
 wezterm.on('toggle-input-mode', function(window, pane)
@@ -164,13 +194,8 @@ end)
 config.keys = {
   key('Enter', 'ALT', act.ToggleFullScreen),
   key('F12', 'CTRL|SHIFT', act.EmitEvent 'toggle-input-mode'),
-  -- Paste clipboard text into the focused terminal, including a Zellij pane,
-  -- without switching modes. Plain Ctrl+v still goes to the application.
-  key('V', 'CTRL|SHIFT', act.PasteFrom 'Clipboard'),
 }
-if is_macos then
-  table.insert(config.keys, key('v', 'SUPER', act.PasteFrom 'Clipboard'))
-end
+-- APP clipboard entries are added after local overrides so their options apply.
 
 -- WEZ enables an explicit outer-terminal keymap. Plain F12 is deliberately
 -- absent: it reaches Zellij in both modes. Ordinary Escape is also unbound.
@@ -184,7 +209,6 @@ local wez_keys = {
     name = 'wezterm_commands', one_shot = true, until_unknown = false,
     timeout_milliseconds = 2000, prevent_fallback = false,
   }),
-  key('C', 'CTRL|SHIFT', act.CopyTo 'Clipboard'),
   key('F', 'CTRL|SHIFT', act.Search 'CurrentSelectionOrEmptyString'),
   key('P', 'CTRL|SHIFT', act.ActivateCommandPalette),
   key('R', 'CTRL|SHIFT', act.ReloadConfiguration),
@@ -207,11 +231,13 @@ for index = 1, 9 do
     act.ActivateTab(index == 9 and -1 or index - 1)))
 end
 
--- Other macOS Cmd equivalents are explicit WEZ-only bindings. Cmd+v is global
--- above; OS-owned shortcuts/menu actions remain OS-controlled.
+-- Clipboard shortcuts are always available in WEZ, even when disabled in APP.
+add_clipboard_bindings(wez_keys, true, true)
+
+-- Other macOS Cmd equivalents are explicit WEZ-only bindings.
+-- OS-owned shortcuts/menu actions remain OS-controlled.
 if is_macos then
   for _, binding in ipairs {
-    key('c', 'SUPER', act.CopyTo 'Clipboard'),
     key('f', 'SUPER', act.Search 'CurrentSelectionOrEmptyString'),
     key('p', 'SUPER|SHIFT', act.ActivateCommandPalette),
     key('r', 'SUPER', act.ReloadConfiguration),
@@ -306,7 +332,7 @@ if local_file then
   assert(chunk, load_error)
   local apply_local = chunk()
   assert(type(apply_local) == 'function', 'wezterm.local.lua must return function(config, wezterm)')
-  apply_local(config, wezterm)
+  apply_local(config, wezterm, app_shortcuts)
 elseif read_code ~= 2 then
   error('Cannot read wezterm.local.lua: ' .. tostring(read_error))
 end
@@ -316,5 +342,16 @@ assert(config.leader == nil,
   'Remove config.leader from wezterm.local.lua; use the WEZ command key table instead')
 assert(config.disable_default_key_bindings == true,
   'APP routing requires disable_default_key_bindings = true; add keys to the WEZ table')
+
+-- Build the optional global entries only after the local file has set its
+-- preferences. Keep these options outside config: unknown WezTerm fields fail
+-- schema validation. Extra Lua function arguments do not break older profiles.
+for _, name in ipairs { 'enabled', 'copy', 'paste' } do
+  assert(type(app_shortcuts[name]) == 'boolean',
+    'app_shortcuts.' .. name .. ' must be true or false')
+end
+if app_shortcuts.enabled then
+  add_clipboard_bindings(config.keys, app_shortcuts.copy, app_shortcuts.paste)
+end
 
 return config

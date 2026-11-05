@@ -138,9 +138,9 @@ fi && cp "$HOME/wezterm-config/.wezterm.lua" "$HOME/.wezterm.lua"
 ```
 
 The active files use the same home-directory layout as Linux. WezTerm uses your
-platform default shell; Cmd+V pastes in either mode, and its other configured
-Cmd shortcuts are available in WEZ mode. If the application opens but `wezterm`
-is unavailable in Terminal, see
+platform default shell; Cmd+C/V copy/paste in either mode by default. The APP
+clipboard extensions are configurable; other configured Cmd shortcuts require WEZ.
+If the application opens but `wezterm` is unavailable in Terminal, see
 [executable locations](#wezterm-command-not-found).
 
 ## Optional private profile
@@ -182,10 +182,15 @@ if [ ! -e "$HOME/wezterm.local.lua" ]; then
 fi
 ```
 
-The example contains optional font/theme/shell overrides, routing-key customization,
-and a generic platform/file-existence check for a machine-only launch entry.
+The example contains optional font/theme/shell overrides, APP clipboard switches,
+routing-key customization, and a generic platform/file-existence check for a
+machine-only launch entry.
 It does not enable a work profile by itself. The private file runs after shared
-settings and can append to `config.launch_menu`.
+settings and can append to `config.launch_menu`. To customize APP shortcuts,
+accept the optional third function argument `app_shortcuts` and set its
+`enabled`, `copy`, or `paste` booleans. Existing two-argument private profiles
+remain compatible; you do not need to replace a working private file. See
+[APP extension settings](INPUT.md#configure-app-extensions).
 
 After creating it for the first time, toggle WEZ with `Ctrl+Shift+F12`, then
 reload with `Ctrl+Shift+r` or `Cmd+r` on macOS. The badge returns APP.
@@ -223,9 +228,11 @@ Also open WezTerm normally from your desktop/app launcher to confirm it finds th
 same home-directory config. Configuration tools may fall back to defaults after
 an error, so inspect diagnostics as well as the command's exit status.
 
-Expect Catppuccin Macchiato, a bottom tab bar, and an **APP** badge. In APP,
-Alt+Enter (fullscreen), Ctrl+Shift+F12 (mode toggle), and Ctrl+Shift+V (host clipboard
-paste) are reserved by this config. Cmd+V also pastes on macOS, in either mode.
+Expect Catppuccin Macchiato, a bottom tab bar, and an **APP** badge. Alt+Enter
+(fullscreen) and Ctrl+Shift+F12 (mode toggle) are always reserved. By default,
+Ctrl+Shift+C/V copy/paste the host clipboard in APP too; Cmd+C/V also work on
+macOS. The `app_shortcuts` booleans control these optional APP bindings. WEZ
+always keeps copy/paste, even when their APP extensions are disabled.
 Plain F12 reaches Zellij; ordinary Escape reaches the application immediately.
 
 Toggle **WEZ** with Ctrl+Shift+F12. Press Ctrl+Shift+Space, release, then `p` for
@@ -360,8 +367,9 @@ a window.
 
 ### A key is consumed or the badge is unexpected
 
-Check the APP/WEZ badge and Zellij's Normal/Locked indicator independently. In
-APP only fullscreen, the mode toggle, and host-clipboard paste are reserved.
+Check the APP/WEZ badge and Zellij's Normal/Locked indicator independently.
+APP reserves fullscreen, the mode toggle, and whichever clipboard extensions
+are enabled (copy/paste by default).
 WEZ enables its explicit control map; its command prefix is Ctrl+Shift+Space,
 not Escape. A mode change covers all
 outer tabs/panes in that GUI window. On compact Mac keyboards, F12 may need Fn.
@@ -374,7 +382,9 @@ public example. A reload resets to APP. See [input routing](INPUT.md) for the
 full layer model, copy/search UI behavior, and manual verification checklist.
 
 If Ctrl+Shift+V prints `^V`, confirm that the updated shared file was copied to
-the active config location and reloaded. Host-clipboard paste works in APP and
-WEZ; plain Ctrl+V still goes to the application. Focus the intended Zellij pane
+the active config location and reloaded. In APP, also check that
+`app_shortcuts.enabled` and `app_shortcuts.paste` are true; a disabled extension
+forwards that chord to the application. Copy/paste always work in WEZ.
+Plain Ctrl+C/Ctrl+V still go to the application. Focus the intended Zellij pane
 and enter Neovim Insert mode before pasting into an editor buffer. See
 [clipboard behavior](INPUT.md#clipboard).

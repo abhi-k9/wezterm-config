@@ -9,6 +9,8 @@ and has a light print layout.
 
 The [input-routing guide](../docs/INPUT.md) documents the complete mode contract,
 migration from the Escape leader, local customization, and platform verification.
+Its [APP extension settings](../docs/INPUT.md#configure-app-extensions) control
+copy/paste in APP; both are enabled by default and always available in WEZ.
 
 [Overview](wezterm-cheatsheet.html) preserves the previous combined-sheet URL.
 Keep the files together so the companion navigation links work locally.

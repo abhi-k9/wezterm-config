@@ -1,19 +1,24 @@
 # Input routing: WezTerm → Zellij → Neovim
 
 The shared config starts each WezTerm window in **APP** mode. WezTerm reserves
-fullscreen, the mode toggle, and host-clipboard paste, then lets the terminal
-application handle other keys.
+fullscreen and the mode toggle, plus enabled APP extensions (host copy/paste
+by default), then lets the terminal application handle other keys.
 Use **WEZ** mode temporarily for outer-terminal controls. The tab-bar badge
 shows `APP`, `WEZ`, or `WEZ · CMD` while a one-shot command is pending.
 
-## Always-on keys
+## Keys available in APP
 
 | Key | Owner and action |
 | --- | --- |
 | `Alt+Enter` | WezTerm: toggle fullscreen in either mode. |
 | `Ctrl+Shift+F12` | WezTerm: toggle APP ↔ WEZ for this GUI window. |
-| `Ctrl+Shift+V` | WezTerm: paste the host clipboard into the focused terminal in either mode. |
-| `Cmd+V` (macOS) | The same host-clipboard paste in either mode. |
+| `Ctrl+Shift+C` | Copy the WezTerm selection to the host clipboard. APP extension, enabled by default; always available in WEZ. |
+| `Ctrl+Shift+V` | Paste the host clipboard into the focused terminal. APP extension, enabled by default; always available in WEZ. |
+| `Cmd+C` / `Cmd+V` (macOS) | The same copy/paste actions and APP extension settings. |
+
+Fullscreen and the mode toggle are always reserved. The clipboard extensions
+are controlled by the settings below; disabling one in APP forwards that chord
+to the application instead. This does not disable mouse or OS menu actions.
 
 Plain `F12` is forwarded for Zellij's lock toggle. It does not change WezTerm's
 mode. Ordinary Escape is sent onward immediately; the old Escape leader and
@@ -25,12 +30,50 @@ The [companion Zellij configuration](https://github.com/abhi-k9/zellij-config)
 binds F12 to Normal ↔ Locked. Upstream Zellij defaults may differ. This repo
 does not install or modify Zellij or Neovim.
 
+## Configure APP extensions
+
+The `.wezterm.lua` input section contains these ordinary Lua options:
+
+```lua
+local app_shortcuts = {
+  enabled = true, -- Master switch for all optional APP shortcuts.
+  copy = true,    -- Ctrl+Shift+C; also Cmd+C on macOS.
+  paste = true,   -- Ctrl+Shift+V; also Cmd+V on macOS.
+}
+```
+
+- Set `enabled = false` for APP with only fullscreen and the mode toggle.
+- Keep `enabled = true` and set `copy = false` or `paste = false` to disable
+  just that APP extension. Both enabled means copy and paste work directly in APP.
+- WEZ always keeps both clipboard shortcuts, regardless of these options.
+  Plain Ctrl+C (interrupt) and Ctrl+V (application behavior) are never bound here.
+
+For a per-machine preference, accept the optional third argument in the
+installed `wezterm.local.lua` function and change its fields:
+
+```lua
+return function(config, wezterm, app_shortcuts)
+  app_shortcuts.enabled = false
+  -- Or keep the master enabled and disable one extension:
+  -- app_shortcuts.copy = false
+  -- app_shortcuts.paste = false
+  -- Keep existing appearance settings and launch-menu entries here.
+end
+```
+
+Add the argument and settings to an existing function; preserve its private
+launch entries. Existing two-argument functions continue to work because Lua
+ignores extra arguments. These options are not WezTerm configuration fields:
+do not set `config.app_shortcuts`. The shared config builds the optional global
+bindings after applying local preferences. A missing local file uses the shared
+defaults. Reload after changing the settings; the badge returns to APP.
+
 ## What the modes do
 
 | State | Keyboard routing |
 | --- | --- |
-| APP | Only the global fullscreen, toggle, and paste bindings above belong to WezTerm. Other input follows the normal terminal path to Zellij/the shell. |
-| WEZ | The explicit WezTerm control table adds copy, search, fonts, tabs, scrolling, debug, and the command prefix. Unmatched keys still go onward. |
+| APP | Fullscreen, the toggle, and enabled clipboard extensions belong to WezTerm. Other input follows the normal terminal path to Zellij/the shell. |
+| WEZ | The explicit WezTerm control table always includes copy/paste and adds search, fonts, tabs, scrolling, debug, and the command prefix. Unmatched keys still go onward. |
 | WEZ · CMD | After `Ctrl+Shift+Space` in WEZ, the next command key selects an outer-terminal action. One command or a two-second timeout returns to WEZ. |
 
 In WEZ, `Ctrl+Shift+Space`, release, then `p` opens the launcher; `c` opens an
@@ -91,9 +134,10 @@ may not contain the output you want. Each layer retains its own history.
 
 ## Clipboard
 
-Paste from the **host** clipboard with `Ctrl+Shift+V` in APP or WEZ; `Cmd+V`
-also works on macOS. The text goes into the focused Zellij pane without a mode
-switch. Enter Neovim Insert mode first when pasting into an editor buffer.
+With the default APP extensions, paste from the **host** clipboard with
+`Ctrl+Shift+V` without a mode switch; `Cmd+V` also works on macOS. The text goes
+into the focused Zellij pane. Enter Neovim Insert mode first when pasting into
+an editor buffer. If APP paste is disabled, enter WEZ for the same shortcut.
 Plain `Ctrl+V` remains an application key, so it can retain Neovim block selection
 or shell behavior. It is not the terminal clipboard shortcut. Under traditional
 terminal encoding, forwarding Ctrl+Shift+V can produce the same control character
@@ -103,10 +147,16 @@ Use the configured Neovim clipboard provider and Zellij copy operation for inner
 selections; OSC52 can carry clipboard writes to the host terminal through an
 appropriate setup. This repo does not configure Neovim's clipboard provider.
 
-To copy an outer-terminal selection use `Ctrl+Shift+C`
-(Cmd+C on macOS) in WEZ. A WezTerm selection is a selection of the rendered
-outer terminal, not a semantic selection of an inner editor buffer. Test with
-non-sensitive text locally and through any SSH/WSL path you use.
+To copy rendered text, make a **WezTerm selection** and press `Ctrl+Shift+C`
+(Cmd+C on macOS). This works directly in APP by default; if APP copy is disabled,
+enter WEZ for that shortcut. Hold Shift while dragging when Zellij/Neovim captures
+the mouse, so WezTerm makes the selection. The keyboard shortcut copies an
+existing selection; it does not choose text or yank Neovim's visual selection.
+Plain Ctrl+C still reaches the application for interrupting a command.
+
+A WezTerm selection covers the rendered outer terminal, not a semantic selection
+of an inner editor buffer. Test with non-sensitive text locally and through any
+SSH/WSL path you use.
 
 ## Closing and persistence
 
@@ -147,9 +197,9 @@ instead of closing the outer tab; the receiving application may assign it.
 The public local example shows how to add a WEZ-only binding, change the global
 toggle, or change the WEZ prefix. Put additional outer shortcuts in
 `config.key_tables.wezterm`. Adding bindings to `config.keys` adds exceptions in
-APP too. Defaults remain disabled; macOS Cmd+V is global, and other configured Cmd
-equivalents are explicitly listed in the WEZ table. A local override must preserve
-these routing rules.
+APP too. Defaults remain disabled; macOS Cmd+C/V follow the APP extension settings,
+and the other configured Cmd equivalents are WEZ-only. A local override must
+preserve these routing rules.
 
 Direct shifted number/font shortcuts use physical number-row and +/- key
 positions, so Shift does not turn the matching key into punctuation. The
@@ -160,10 +210,14 @@ keyboard layout.
 
 - New window: APP badge; one Escape reaches Neovim and plain F12 changes only
   Zellij's mode. Check ordinary editing keys and Ctrl/Alt combinations you use.
-- Both modes: Ctrl+Shift+V pastes host clipboard text into the focused Zellij
-  pane (Cmd+V also works on macOS); Ctrl+V keeps its application behavior.
-  Alt+Enter toggles fullscreen. Ctrl+Shift+F12 changes only the current WezTerm
-  window, without changing Zellij's lock state.
+- With default extensions: copy a WezTerm selection with Ctrl+Shift+C and paste
+  with Ctrl+Shift+V in APP and WEZ (Cmd+C/V also work on macOS). Ctrl+C/Ctrl+V
+  keep their application behavior.
+- Disable an APP extension and reload: that chord goes to the application in
+  APP; its host-clipboard action still works in WEZ. Disabling the master leaves
+  only fullscreen and the toggle reserved in APP.
+- Both modes: Alt+Enter toggles fullscreen. Ctrl+Shift+F12 changes only the current
+  WezTerm window, without changing Zellij's lock state.
 - WEZ: prefix `p` opens the launcher; fonts/clipboard work; returning APP releases
   WezTerm copy/search input capture. Another new window still starts APP.
 - Scrolling: Zellij's Scroll mode reads the intended inner pane; the outer

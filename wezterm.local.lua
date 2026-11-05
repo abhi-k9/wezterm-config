@@ -9,7 +9,9 @@
 --
 -- This function runs AFTER the shared settings. A missing installed local file
 -- is fine; syntax/runtime errors in a present file deliberately surface.
-return function(config, wezterm)
+-- The optional third argument controls the shared APP shortcut extensions.
+-- Older private functions accepting only (config, wezterm) remain compatible.
+return function(config, wezterm, app_shortcuts)
   -- Appearance --------------------------------------------------------------
   -- Uncomment a setting in the installed copy to replace the shared value.
   -- Font size is in points; opacity 1.0 is opaque (no compositor required).
@@ -18,8 +20,15 @@ return function(config, wezterm)
   -- config.color_scheme = 'Catppuccin Mocha'
 
   -- Input routing ----------------------------------------------------------
-  -- APP reserves fullscreen, the mode toggle, and host-clipboard paste. Add extra
-  -- outer shortcuts to config.key_tables.wezterm (WEZ-only), not config.keys (global).
+  -- APP always reserves fullscreen and the mode toggle. Copy/paste extensions
+  -- are enabled by default. Uncomment the options you want to change:
+  -- app_shortcuts.enabled = false -- Disable all optional APP shortcuts.
+  -- app_shortcuts.copy = false -- Keep APP paste, but require WEZ for outer copy.
+  -- app_shortcuts.paste = false -- Keep APP copy, but require WEZ for host paste.
+  -- These switches also cover Cmd+c/v on macOS. WEZ always keeps copy/paste.
+  -- Plain Ctrl+c/Ctrl+v keep their application behavior in both modes.
+  -- Add extra outer shortcuts to config.key_tables.wezterm (WEZ-only), not
+  -- config.keys (global).
   -- Do not reintroduce config.leader or enable default bindings: either would
   -- intercept application keys in APP mode, and the shared config rejects it.
   -- table.insert(config.key_tables.wezterm, {

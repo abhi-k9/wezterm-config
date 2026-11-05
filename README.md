@@ -18,16 +18,25 @@ linking to these separate references.
 
 ## Input modes: WezTerm → Zellij → Neovim
 
-New windows start **APP**, forwarding ordinary application keys. Always-on
-shortcuts are **Alt+Enter** for fullscreen, **Ctrl+Shift+F12** to toggle APP ↔ WEZ,
-and **Ctrl+Shift+V** to paste the host clipboard (**Cmd+V** also works on macOS).
+New windows start **APP**, forwarding ordinary application keys. **Alt+Enter**
+for fullscreen and **Ctrl+Shift+F12** to toggle APP ↔ WEZ are always available.
+By default **Ctrl+Shift+C/V** copy/paste the host clipboard in APP too
+(**Cmd+C/V** also work on macOS).
 Plain **F12** reaches Zellij for its lock toggle, and one **Escape** reaches the
 application. There is no Escape leader.
 
-Paste directly into the focused Zellij pane in APP; enter Insert mode first
-when pasting into Neovim. Plain Ctrl+V remains an application key.
+Select rendered text in WezTerm, then copy directly in APP. If an inner app
+captures mouse drags, hold Shift while dragging to make a WezTerm selection.
+Paste goes into the focused Zellij pane; enter Insert mode first when pasting
+into Neovim. Plain Ctrl+C and Ctrl+V remain application keys.
 
-Toggle **WEZ** for outer-terminal copy/search/font/tab controls. In WEZ,
+In `.wezterm.lua`, the documented `app_shortcuts` options control these APP
+extensions: `enabled = false` disables both, while `copy = false` or
+`paste = false` disables just that APP shortcut. WEZ always keeps both. See
+[APP shortcut settings](docs/INPUT.md#configure-app-extensions) for the complete
+options block and per-machine overrides in the local file.
+
+Toggle **WEZ** for outer-terminal search/font/tab controls. In WEZ,
 **Ctrl+Shift+Space**, release, then a command key opens the launcher (`p`), creates
 an outer tab (`c`), closes an outer pane (`x`), etc. Return APP for daily editing.
 The mode is window-local; config reloads reset APP. OS-owned controls still apply.
@@ -71,7 +80,7 @@ tradeoffs, and useful alternatives. The main groups are:
 - Window controls, padding, initial grid size, and font-resize behavior.
 - Tab-bar position, style, title width, and zero-based indices.
 - Cursor style, blink interval, scrollbar, scrollback, bell, and close behavior.
-- Native shells, platform-specific launch choices, input modes, and shortcuts.
+- Native shells, platform-specific launch choices, input modes, and optional APP clipboard shortcuts.
 
 The shared config leaves `default_prog` unset, allowing WezTerm to choose its
 platform default shell. Windows-specific launch choices are created only on
@@ -155,6 +164,7 @@ python3 -m unittest discover -s tests -v
 Use `python` instead of `python3` where appropriate. Tests use a WezTerm binary
 on PATH, or the executable specified by `WEZTERM_BIN`. They exercise the real
 Lua/configuration APIs, the APP shortcut allowlist, mode transitions, OS branches,
-optional overrides, legacy-override rejection, and error paths.
+all APP clipboard switch combinations, optional overrides, legacy-override
+rejection, and error paths.
 Platform simulation validates configuration logic; test native shells, key
 events, and window effects on each OS as well.
