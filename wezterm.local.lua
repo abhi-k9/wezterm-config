@@ -29,6 +29,9 @@ return function(config, wezterm, app_shortcuts)
   -- Plain Ctrl+c/Ctrl+v keep their application behavior in both modes.
   -- Add extra outer shortcuts to config.key_tables.wezterm (WEZ-only), not
   -- config.keys (global).
+  -- Explicit config.keys entries win over generated APP clipboard defaults.
+  -- The APP switches control shared defaults, not your custom global bindings.
+  -- Option names are checked: use enabled, copy, and paste with true/false.
   -- Do not reintroduce config.leader or enable default bindings: either would
   -- intercept application keys in APP mode, and the shared config rejects it.
   -- table.insert(config.key_tables.wezterm, {

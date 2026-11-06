@@ -294,9 +294,9 @@ Windows / PowerShell:
 
 ```powershell
 git -C "$HOME\wezterm-config" pull --ff-only
-```
-
-```powershell
+if ($LASTEXITCODE -ne 0) {
+    throw 'Git pull failed; the installed config was not copied.'
+}
 Copy-Item -LiteralPath "$HOME\wezterm-config\.wezterm.lua" -Destination "$HOME\.wezterm.lua" -ErrorAction Stop
 ```
 
@@ -372,7 +372,9 @@ APP reserves fullscreen, the mode toggle, and whichever clipboard extensions
 are enabled (copy/paste by default).
 WEZ enables its explicit control map; its command prefix is Ctrl+Shift+Space,
 not Escape. A mode change covers all
-outer tabs/panes in that GUI window. On compact Mac keyboards, F12 may need Fn.
+outer tabs/panes in that GUI window. On laptops/compact keyboards, check
+Fn/Fn-lock: the F12 position may send a media key instead of F12. Hold Fn if
+needed, including on Windows and Linux laptops.
 
 Remove old leader/default-key overrides and inspect any custom global
 `config.keys` entries in the local file. WEZ-only additions belong in
@@ -380,6 +382,15 @@ Remove old leader/default-key overrides and inspect any custom global
 reaches WezTerm, change that OS shortcut or the local toggle chord using the
 public example. A reload resets to APP. See [input routing](INPUT.md) for the
 full layer model, copy/search UI behavior, and manual verification checklist.
+
+If you are in WEZ and want to reset the mode, Ctrl+Shift+R (Cmd+R on macOS)
+reloads and returns to APP without restarting pane applications. Ctrl+Shift+L
+opens the debug overlay only in WEZ; in APP that chord goes to the application.
+The mouse pointer hiding when typing follows `hide_mouse_cursor_when_typing`.
+
+Explicit local global bindings take precedence over generated APP clipboard
+defaults. The extension switches do not remove those custom bindings. Check
+`show-keys --lua` to see the resolved input map when a chord behaves unexpectedly.
 
 If Ctrl+Shift+V prints `^V`, confirm that the updated shared file was copied to
 the active config location and reloaded. In APP, also check that

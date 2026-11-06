@@ -16,7 +16,7 @@ WEZTERM = os.environ.get('WEZTERM_BIN') or shutil.which('wezterm')
 @unittest.skipUnless(WEZTERM, 'Install WezTerm or set WEZTERM_BIN to its executable')
 class ConfigTests(unittest.TestCase):
     def probe(self, *, triple='x86_64-unknown-linux-gnu', local=None,
-              expected_error=None, read_failure=False):
+              expected_error=None, read_failure=False, resolved=False):
         with tempfile.TemporaryDirectory(prefix='wezterm-config-test-') as directory:
             path = Path(directory)
             if local is not None:
@@ -46,18 +46,29 @@ if not ok then
 else
   local callback = assert(callbacks['update-status'], 'missing status callback')
   local status, active_table
+  local config_reads, status_writes = 0, 0
   local palette = { tab_bar = { active_tab = {
     fg_color = '#181926', bg_color = '#c6a0f6',
   } } }
   local window = {
+    window_id = function() return 1 end,
     active_key_table = function() return active_table end,
     effective_config = function()
+      config_reads = config_reads + 1
       return { resolved_palette = palette }
     end,
-    set_left_status = function(_, value) status = value end,
+    set_left_status = function(_, value)
+      status_writes = status_writes + 1
+      status = value
+    end,
   }
   callback(window)
   assert(status and status:find('APP'), 'APP badge missing on a fresh window')
+  for _ = 1, 500 do callback(window) end
+  assert(config_reads == 1, 'idle polls must reuse the effective palette')
+  -- This call is also WezTerm 20240203's status-poll heartbeat. Deduplicating
+  -- it in Lua stalls idle polling and can leave an expired prefix badge stuck.
+  assert(status_writes == 501, 'idle polls must preserve the status heartbeat')
   active_table = 'wezterm'
   callback(window)
   assert(status:find('WEZ'), 'WEZ badge missing')
@@ -70,12 +81,45 @@ else
     callback(window)
     assert(status:find('WEZ') and not status:find('APP'), 'WezTerm UI must not show APP')
   end
+  assert(config_reads == 1, 'mode changes must reuse the formatted palette')
   palette = { foreground = '#f5a97f', background = '#24273a' }
-  callback(window)
+  assert(callbacks['window-config-reloaded'], 'missing cache invalidation callback')(window)
+  assert(config_reads == 2, 'config/override reload must refresh the palette')
   assert(status:find('245:169:127', 1, true), 'theme without tab colors must use terminal palette')
   active_table = nil
   callback(window)
   assert(status:find('APP') and not status:find('WEZ'), 'APP badge must replace WEZ')
+  local second_status
+  callback({window_id=function() return 2 end,
+            active_key_table=function() return 'wezterm' end,
+            effective_config=function()
+              return {resolved_palette={foreground='#a6da95', background='#181926'}}
+            end,
+            set_left_status=function(_, value) second_status=value end})
+  assert(second_status:find('WEZ') and second_status:find('166:218:149', 1, true),
+    'window palettes and modes must be independent')
+  callback(window)
+  assert(config_reads == 2 and status:find('APP'), 'another window must not invalidate this cache')
+  -- A config event can arrive while a previous GUI palette read is pending.
+  -- Simulate that interleaving: the older read must not repaint stale colors.
+  local race_window, race_status, reloaded
+  race_window = {
+    window_id=function() return 3 end,
+    active_key_table=function() return nil end,
+    effective_config=function()
+      local foreground = reloaded and '#00ff00' or '#ff0000'
+      if not reloaded then
+        reloaded = true
+        callbacks['window-config-reloaded'](race_window)
+      end
+      return {resolved_palette={foreground=foreground, background='#181926'}}
+    end,
+    set_left_status=function(_, value) race_status=value end,
+  }
+  callback(race_window)
+  assert(race_status:find('0:255:0', 1, true), 'stale palette read overwrote reloaded colors')
+  callback(race_window)
+  assert(race_status:find('0:255:0', 1, true), 'reloaded colors must remain cached')
   local actions = {}
   window.perform_action = function(_, action) actions[#actions + 1] = action end
   local toggle = assert(callbacks['toggle-input-mode'])
@@ -130,6 +174,8 @@ return ok and config or w.config_builder()
             contents = result_path.read_text(encoding='utf-8')
             self.assertTrue(contents, completed.stderr)
             result = json.loads(contents)
+            if resolved:
+                result['resolved_lua'] = completed.stdout
             if expected_error:
                 self.assertIn(expected_error, result.get('error', ''))
             else:
@@ -177,7 +223,7 @@ return ok and config or w.config_builder()
           config.keys[2].key = 'F11'
           config.keys[2].mods = 'CTRL|ALT'
         end''')
-        toggle = result['keys'][1]
+        toggle = next(entry for entry in result['keys'] if entry['key'] == 'F11')
         self.assertEqual(toggle['key'], 'F11')
         self.assertEqual(toggle['action']['EmitEvent'], 'toggle-input-mode')
         self.assertEqual(len(result['keys']), 4)
@@ -208,12 +254,12 @@ return ok and config or w.config_builder()
                 self.assertTrue(result['defaults_disabled'])
                 self.assertIs(result['leader'], False)
                 self.assertEqual(len(result['keys']), 6 if 'apple' in triple else 4)
-                self.assertEqual(result['keys'][0], {
+                keys = {entry['key']: entry for entry in result['keys']}
+                self.assertEqual(keys['Enter'], {
                     'key': 'Enter', 'mods': 'ALT', 'action': 'ToggleFullScreen'})
-                self.assertEqual(result['keys'][1]['key'], 'F12')
-                self.assertEqual(set(result['keys'][1]['mods'].split('|')), {'CTRL', 'SHIFT'})
-                self.assertEqual(result['keys'][1]['action']['EmitEvent'], 'toggle-input-mode')
-                self.assertEqual(result['keys'][2], {
+                self.assertEqual(set(keys['F12']['mods'].split('|')), {'CTRL', 'SHIFT'})
+                self.assertEqual(keys['F12']['action']['EmitEvent'], 'toggle-input-mode')
+                self.assertEqual(keys['C'], {
                     'key': 'C', 'mods': 'CTRL|SHIFT', 'action': {'CopyTo': 'Clipboard'}})
                 paste = next(entry for entry in result['keys'] if entry['key'] == 'V')
                 self.assertEqual(paste, {
@@ -259,9 +305,35 @@ return ok and config or w.config_builder()
                                              and entry['mods'] == 'CTRL' for entry in bindings))
 
     def test_app_shortcut_options_require_booleans(self):
+        for name in ['enabled', 'copy', 'paste']:
+            with self.subTest(name=name):
+                self.probe(local='''return function(config, wezterm, app_shortcuts)
+                  app_shortcuts.%s = 'false'
+                end''' % name, expected_error='app_shortcuts.%s must be true or false' % name)
+
+    def test_app_shortcut_option_typos_are_visible(self):
         self.probe(local='''return function(config, wezterm, app_shortcuts)
-          app_shortcuts.enabled = 'false'
-        end''', expected_error='app_shortcuts.enabled must be true or false')
+          app_shortcuts.enabld = false
+        end''', expected_error='Unknown app_shortcuts option: enabld')
+
+    def test_explicit_local_shortcuts_override_generated_clipboard_defaults(self):
+        for triple in ['x86_64-unknown-linux-gnu', 'aarch64-apple-darwin',
+                       'x86_64-pc-windows-msvc']:
+            for key, mods in [('C', 'CTRL|SHIFT'), ('c', 'SHIFT|CTRL')]:
+                with self.subTest(triple=triple, key=key, mods=mods):
+                    result = self.probe(triple=triple, resolved=True, local='''
+                      return function(config, wezterm)
+                        table.insert(config.keys, {
+                          key='%s', mods='%s', action=wezterm.action.Nop,
+                        })
+                      end''' % (key, mods))
+                    # Inspect the real input map after WezTerm normalizes Shift
+                    # and modifier order, rather than just the raw Lua list.
+                    global_map = result['resolved_lua'].split('key_tables', 1)[0]
+                    copy_rows = [line for line in global_map.splitlines()
+                                 if "key = 'C'" in line and 'CTRL' in line]
+                    self.assertTrue(copy_rows, global_map)
+                    self.assertTrue(all('act.Nop' in line for line in copy_rows), copy_rows)
 
     def test_toggle_is_persistent_and_exits_overlays_on_return(self):
         actions = self.probe()['toggle_actions']

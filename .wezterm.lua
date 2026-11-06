@@ -139,7 +139,7 @@ end
 -- Never set a native config.leader: it is checked BEFORE key tables and would
 -- intercept Escape or another prefix even in APP mode.
 config.disable_default_key_bindings = true
-config.status_update_interval = 200 -- Milliseconds; refresh the small mode badge.
+config.status_update_interval = 200 -- Milliseconds; poll mode, reuse cached badge text.
 
 -- APP shortcut extensions --------------------------------------------------
 -- These are ordinary Lua options, not WezTerm config fields. Edit true/false
@@ -291,26 +291,60 @@ for index = 0, 9 do
 end
 config.key_tables = { wezterm = wez_keys, wezterm_commands = commands }
 
--- Visible per-window input state. Keep the retro tab bar visible to see it.
--- WezTerm's own copy/search/picker UIs can temporarily handle their UI keys;
--- the mode toggle exits copy/search as well as the command stack.
-wezterm.on('update-status', function(window)
+-- Visible per-window input state. Only read the full effective config when
+-- filling the cache or after a config/override change. A quiet window reuses
+-- the prepared text instead of rebuilding the palette and ANSI formatting.
+-- Bound the cache so closed windows cannot accumulate entries indefinitely.
+local badge_cache, badge_slots, next_badge_slot = {}, {}, 1
+local badge_cache_limit = 64
+local function update_badge(window)
+  local id = window:window_id()
+  local state = badge_cache[id]
+  if not state then
+    local old_id = badge_slots[next_badge_slot]
+    if old_id then badge_cache[old_id] = nil end
+    state = {}
+    badge_cache[id] = state
+    badge_slots[next_badge_slot] = id
+    next_badge_slot = next_badge_slot % badge_cache_limit + 1
+  end
+
   local name = window:active_key_table()
   -- active_key_table also reports copy_mode/search_mode while their UI owns
   -- input. Keep the badge WEZ there, instead of misleadingly showing APP.
-  local is_wez = name ~= nil
-  local badge = is_wez and ' WEZ ' or ' APP '
-  if name == 'wezterm_commands' then badge = ' WEZ · CMD ' end
-  local palette = window:effective_config().resolved_palette
-  local tab = (palette.tab_bar or {}).active_tab or {}
-  window:set_left_status(wezterm.format {
-    { Background = { Color = is_wez and (tab.bg_color or palette.foreground or '#cad3f5')
-      or (palette.background or '#24273a') } },
-    { Foreground = { Color = is_wez and (tab.fg_color or palette.background or '#24273a')
-      or (palette.foreground or '#cad3f5') } },
-    { Attribute = { Intensity = 'Bold' } },
-    { Text = badge },
-  })
+  local mode = name == 'wezterm_commands' and ' WEZ · CMD ' or (name and ' WEZ ' or ' APP ')
+  if not state.formatted then
+    local palette = window:effective_config().resolved_palette
+    local tab = (palette.tab_bar or {}).active_tab or {}
+    local foreground = palette.foreground or '#cad3f5'
+    local background = palette.background or '#24273a'
+    state.formatted = {}
+    for _, label in ipairs { ' APP ', ' WEZ ', ' WEZ · CMD ' } do
+      local is_wez = label ~= ' APP '
+      state.formatted[label] = wezterm.format {
+        { Background = { Color = is_wez and (tab.bg_color or foreground) or background } },
+        { Foreground = { Color = is_wez and (tab.fg_color or background) or foreground } },
+        { Attribute = { Intensity = 'Bold' } },
+        { Text = label },
+      }
+    end
+  end
+  state.text = state.formatted[mode]
+  -- GUI calls can yield. Prefer a newer badge if a reload replaced this entry
+  -- while we were reading its palette. Never publish the old palette back into
+  -- the cache. An evicted entry can still submit text to keep polling alive.
+  local current = badge_cache[id]
+  -- WezTerm 20240203 schedules the next status poll through this call, including
+  -- when text is unchanged. Keep it; WezTerm itself skips redundant redraws.
+  window:set_left_status((current and current.text) or state.text)
+end
+wezterm.on('update-status', update_badge)
+-- Includes per-window set_config_overrides changes as well as file reloads.
+-- Refresh immediately even if the mode itself did not change.
+wezterm.on('window-config-reloaded', function(window)
+  local id = window:window_id()
+  if badge_cache[id] then badge_cache[id] = {} end
+  update_badge(window)
 end)
 
 -- Optional private overrides -----------------------------------------------
@@ -350,8 +384,18 @@ for _, name in ipairs { 'enabled', 'copy', 'paste' } do
   assert(type(app_shortcuts[name]) == 'boolean',
     'app_shortcuts.' .. name .. ' must be true or false')
 end
+for name in pairs(app_shortcuts) do
+  assert(name == 'enabled' or name == 'copy' or name == 'paste',
+    'Unknown app_shortcuts option: ' .. tostring(name))
+end
 if app_shortcuts.enabled then
-  add_clipboard_bindings(config.keys, app_shortcuts.copy, app_shortcuts.paste)
+  -- WezTerm resolves duplicate chords in declaration order: the last wins.
+  -- Put generated defaults first so explicit local bindings take precedence,
+  -- including WezTerm's own modifier aliases and Shift normalization rules.
+  local keys = {}
+  add_clipboard_bindings(keys, app_shortcuts.copy, app_shortcuts.paste)
+  for _, binding in ipairs(config.keys) do table.insert(keys, binding) end
+  config.keys = keys
 end
 
 return config

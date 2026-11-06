@@ -22,9 +22,10 @@ to the application instead. This does not disable mouse or OS menu actions.
 
 Plain `F12` is forwarded for Zellij's lock toggle. It does not change WezTerm's
 mode. Ordinary Escape is sent onward immediately; the old Escape leader and
-double-Escape workaround are gone. On compact Mac keyboards, sending F12 may
-require Fn; the WezTerm toggle then uses `Ctrl+Shift+Fn+F12`. The window manager
-or OS can reserve combinations before WezTerm receives them.
+double-Escape workaround are gone. On laptops/compact keyboards, check Fn/Fn-lock:
+the F12 position may send a media key instead. Hold Fn if needed; the WezTerm
+toggle then uses `Ctrl+Shift+Fn+F12`. The window manager or OS can reserve
+combinations before WezTerm receives them.
 
 The [companion Zellij configuration](https://github.com/abhi-k9/zellij-config)
 binds F12 to Normal ↔ Locked. Upstream Zellij defaults may differ. This repo
@@ -47,6 +48,12 @@ local app_shortcuts = {
   just that APP extension. Both enabled means copy and paste work directly in APP.
 - WEZ always keeps both clipboard shortcuts, regardless of these options.
   Plain Ctrl+C (interrupt) and Ctrl+V (application behavior) are never bound here.
+
+The switches control the shared APP defaults. Explicit global `config.keys`
+bindings in the local file take precedence, including chords WezTerm normalizes
+to the same key. Disabling an extension does not remove your own global binding
+for that chord. Option names and boolean values are validated so a typo does not
+silently leave an extension enabled.
 
 For a per-machine preference, accept the optional third argument in the
 installed `wezterm.local.lua` function and change its fields:
@@ -88,6 +95,11 @@ Other windows have independent modes. New windows start APP; reloading the
 configuration clears key-table activations and returns windows to APP. The
 choice is not saved across restart and is not inferred from process names,
 SSH/WSL connections, or Zellij's lock state.
+
+Badge colors are cached per window and refreshed on config reload or a
+`set_config_overrides` change. Unchanged polls reuse prepared text, while the
+status setter keeps WezTerm 20240203's polling timer alive. WezTerm avoids redraws
+for unchanged text; the cache is bounded independently of mode state.
 
 In WEZ, WezTerm's copy/search/picker UIs temporarily handle their UI keys.
 The mode toggle closes its copy/search UI when returning to APP. APP is a
@@ -224,7 +236,7 @@ keyboard layout.
   scrollbar is not used as an inner-pane history selector.
 - Reload: badge returns APP; private launch entries are still available in the
   WEZ launcher. Native OS shortcuts may require changing a conflicting system
-  shortcut or the local toggle chord.
+  shortcut or the local toggle chord. Check Fn/Fn-lock if F12 is not arriving.
 
 The automated config tests exercise all OS branches and event actions with the
 real WezTerm Lua/schema API. Native keyboard, OS shortcut, and terminal encoding

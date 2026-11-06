@@ -35,6 +35,7 @@ extensions: `enabled = false` disables both, while `copy = false` or
 `paste = false` disables just that APP shortcut. WEZ always keeps both. See
 [APP shortcut settings](docs/INPUT.md#configure-app-extensions) for the complete
 options block and per-machine overrides in the local file.
+Explicit local bindings take precedence over generated clipboard defaults.
 
 Toggle **WEZ** for outer-terminal search/font/tab controls. In WEZ,
 **Ctrl+Shift+Space**, release, then a command key opens the launcher (`p`), creates
@@ -165,6 +166,14 @@ Use `python` instead of `python3` where appropriate. Tests use a WezTerm binary
 on PATH, or the executable specified by `WEZTERM_BIN`. They exercise the real
 Lua/configuration APIs, the APP shortcut allowlist, mode transitions, OS branches,
 all APP clipboard switch combinations, optional overrides, legacy-override
-rejection, and error paths.
+rejection, resolved binding precedence, badge cache invalidation, and error paths.
 Platform simulation validates configuration logic; test native shells, key
 events, and window effects on each OS as well.
+
+The badge polls the input mode every 200 ms, but caches its palette and formatted
+text per window. It reads the full effective config on a cache miss or config/
+window-override reload. The status setter still runs each poll: WezTerm 20240203
+uses it to schedule the next poll and already avoids redraws for unchanged text.
+The cache is bounded so closed windows do not accumulate entries indefinitely. Rendering
+limits and scrollback remain conservative; opacity `1.0` can reduce compositing
+work on machines where transparency is costly.
