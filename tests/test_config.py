@@ -214,7 +214,7 @@ return ok and config or w.config_builder()
                        'x86_64-pc-windows-msvc']:
             with self.subTest(triple=triple):
                 result = self.probe(triple=triple, local=example)
-                self.assertEqual(result['font_size'], 14)
+                self.assertEqual(result['font_size'], 13)
                 self.assertIs(result['default_prog'], False)
                 self.assertEqual(len(result['launch_menu']), 2 if 'windows' in triple else 0)
 

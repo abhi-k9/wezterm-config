@@ -16,7 +16,7 @@ local is_macos = wezterm.target_triple:find('apple') ~= nil
 -- JetBrains Mono is bundled with WezTerm. Emoji and Nerd Font symbols use
 -- WezTerm's fallback fonts; installing a patched primary font is optional.
 config.font = wezterm.font 'JetBrains Mono'
-config.font_size = 14.0 -- Points, not pixels; each platform scales for its DPI.
+config.font_size = 13.0 -- Points, not pixels; each platform scales for its DPI.
 config.line_height = 1.0 -- Multiplier: 1.1 adds vertical breathing room.
 config.cell_width = 1.0 -- Multiplier: change carefully; wide cells affect alignment.
 
