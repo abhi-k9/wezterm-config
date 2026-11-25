@@ -257,6 +257,22 @@ if is_macos then
   end
 end
 
+wezterm.on('augment-command-palette', function()
+  return {
+    {
+      brief = 'Rename tab',
+      action = act.PromptInputLine {
+        description = 'Enter a tab title (leave empty for the automatic title)',
+        action = wezterm.action_callback(function(window, pane, title)
+          if title ~= nil then
+            window:active_tab():set_title(title)
+          end
+        end),
+      },
+    },
+  }
+end)
+
 -- A one-shot command prefix exists only in WEZ mode. It returns to WEZ after
 -- one action or 2 seconds. An unknown key cancels the prefix and follows the
 -- normal WEZ routing. Escape cancels it AND sends one literal Escape onward.

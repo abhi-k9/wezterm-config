@@ -90,6 +90,10 @@ in APP. Escape cancels a pending prefix and sends one Escape to the application.
 An unknown command cancels the prefix and follows normal WEZ routing. F12 stays
 available to Zellij, including when a prefix is pending.
 
+To rename the current outer tab, open the WEZ command palette with
+`Ctrl+Shift+P`, search for **Rename tab**, enter a title, and press Enter.
+Submit an empty title to restore the automatic title, or press Escape to cancel.
+
 The mode belongs to the **WezTerm GUI window**, covering its outer tabs/panes.
 Other windows have independent modes. New windows start APP; reloading the
 configuration clears key-table activations and returns windows to APP. The
