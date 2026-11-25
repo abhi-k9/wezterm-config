@@ -259,6 +259,11 @@ end
 
 wezterm.on('augment-command-palette', function()
   return {
+    { brief = 'Switch tab by name', action = act.ShowLauncherArgs { flags = 'FUZZY|TABS' } },
+    { brief = 'Switch workspace by name', action = act.ShowLauncherArgs { flags = 'FUZZY|WORKSPACES' } },
+    { brief = 'Open launch profile', action = act.ShowLauncherArgs { flags = 'FUZZY|LAUNCH_MENU_ITEMS' } },
+    { brief = 'Split pane to the left', action = act.SplitPane { direction = 'Left', command = { domain = 'CurrentPaneDomain' } } },
+    { brief = 'Split pane above', action = act.SplitPane { direction = 'Up', command = { domain = 'CurrentPaneDomain' } } },
     {
       brief = 'Rename tab',
       action = act.PromptInputLine {

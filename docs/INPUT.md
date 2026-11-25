@@ -94,6 +94,11 @@ To rename the current outer tab, open the WEZ command palette with
 `Ctrl+Shift+P`, search for **Rename tab**, enter a title, and press Enter.
 Submit an empty title to restore the automatic title, or press Escape to cancel.
 
+The palette also offers **Switch tab by name**, **Switch workspace by name**,
+and **Open launch profile**. Each opens a searchable picker. Launch profiles
+come from your configured launch menu. **Split pane to the left** and
+**Split pane above** open a new outer pane in the current pane’s domain.
+
 The mode belongs to the **WezTerm GUI window**, covering its outer tabs/panes.
 Other windows have independent modes. New windows start APP; reloading the
 configuration clears key-table activations and returns windows to APP. The
